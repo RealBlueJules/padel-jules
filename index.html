@@ -1,1820 +1,1326 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BLUE JULES - Juego de Plataformas</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLUE JULES - Juego de Plataformas</title>
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-        body {
-            background: #0a1a2a;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 10px;
-            overflow: hidden;
-        }
+    body {
+        background: linear-gradient(135deg, #071b3a, #0b4f8a, #071b3a);
+        color: white;
+        font-family: Arial, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 
-        /* --- PANTALLAS --- */
+    #game-container {
+        position: relative;
+        width: 800px;
+        max-width: 95vw;
+    }
 
-        .pantalla-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(135deg, #002244 0%, #0055a5 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
+    canvas {
+        width: 100%;
+        height: auto;
+        display: block;
+        background: linear-gradient(#87ceeb, #dff6ff);
+        border: 4px solid #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    }
 
-        .pantalla-overlay h1 {
-            font-size: 4rem;
-            font-weight: 900;
-            letter-spacing: 5px;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            text-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
+    #hud {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        z-index: 5;
+        pointer-events: none;
+    }
 
-        .character-selector {
-            display: flex;
-            gap: 25px;
-            background: rgba(10, 26, 42, 0.6);
-            padding: 15px 30px;
-            border-radius: 50px;
-            border: 2px solid #4a8a9a;
-            margin-bottom: 25px;
-        }
+    .hud-box {
+        background: rgba(0, 0, 0, 0.65);
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 14px;
+    }
 
-        .character-option {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            padding: 10px 30px;
-            border-radius: 20px;
-            transition: 0.3s;
-            border: 3px solid transparent;
-            user-select: none;
-        }
+    .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 15, 40, 0.92);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        z-index: 10;
+        border-radius: 12px;
+        padding: 25px;
+    }
 
-        .character-option * {
-            pointer-events: none;
-        }
+    .hidden {
+        display: none;
+    }
 
-        .character-option:hover {
-            background: rgba(26, 58, 74, 0.8);
-        }
+    h1 {
+        font-size: 60px;
+        color: #ffffff;
+        text-shadow: 0 0 15px #38a8ff;
+        margin-bottom: 10px;
+    }
 
-        .character-option.selected {
-            border-color: #00cc88;
-            background: rgba(26, 58, 74, 0.9);
-            box-shadow: 0 0 20px rgba(0, 204, 136, 0.4);
-        }
+    h2 {
+        font-size: 30px;
+        margin-bottom: 25px;
+    }
 
-        .character-option .emoji {
-            font-size: 4rem;
-        }
+    .subtitle {
+        font-size: 18px;
+        margin-bottom: 30px;
+        color: #bde5ff;
+    }
 
-        .character-option .label {
-            color: #aaccdd;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
+    button {
+        border: none;
+        border-radius: 12px;
+        padding: 14px 28px;
+        margin: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        color: white;
+        background: linear-gradient(135deg, #0878d1, #13a1ff);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+        transition: 0.2s;
+    }
 
-        /* --- NIVELES --- */
+    button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(70, 190, 255, 0.7);
+    }
 
-        .levels-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-            max-width: 650px;
-            width: 100%;
-            margin-bottom: 30px;
-        }
+    .characters {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
 
-        .level-card {
-            background: rgba(10, 26, 42, 0.7);
-            border: 2px solid #4a8a9a;
-            border-radius: 15px;
-            padding: 15px 10px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            color: #aaccdd;
-        }
+    .character {
+        width: 170px;
+        min-height: 180px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 3px solid transparent;
+        border-radius: 18px;
+        padding: 15px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
 
-        .level-card:hover {
-            background: #00cc88;
-            color: #0a1a2a;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 204, 136, 0.4);
-        }
+    .character:hover {
+        transform: translateY(-8px);
+        border-color: #35b5ff;
+        background: rgba(255, 255, 255, 0.17);
+    }
 
-        /* --- CONTENEDOR DEL JUEGO --- */
+    .character.selected {
+        border-color: #ffd43b;
+        background: rgba(255, 212, 59, 0.18);
+        box-shadow: 0 0 20px rgba(255, 212, 59, 0.5);
+    }
 
-        .game-wrapper {
-            background: #162a3a;
-            padding: 20px;
-            border-radius: 25px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
-            border: 2px solid #4a8a9a;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-        }
+    .character-icon {
+        font-size: 75px;
+        margin-bottom: 8px;
+    }
 
-        canvas {
-            display: block;
-            margin: 0 auto;
-            border-radius: 16px;
-            background: #b3d9e8;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.3);
-            width: 800px;
-            height: 500px;
-        }
+    .character-name {
+        font-size: 20px;
+        font-weight: bold;
+    }
 
-        .ui-bar {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #0a1a2a;
-            border-radius: 50px;
-            border: 1px solid #4a8a9a;
-            color: white;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+    .controls {
+        margin-top: 15px;
+        color: #bde5ff;
+        font-size: 14px;
+        line-height: 1.7;
+    }
 
-        .ui-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
+    #message {
+        margin-top: 10px;
+        font-size: 18px;
+        color: #ffe66d;
+        min-height: 25px;
+    }
 
-        .ui-item .icon {
-            font-size: 1.4rem;
-        }
+    .game-over-title {
+        color: #ff5c5c;
+    }
 
-        .ui-item .value {
-            color: #7fc9d9;
-            min-width: 25px;
-            text-align: center;
-        }
-
-        .level-display {
-            background: #0a1a2a;
-            padding: 4px 16px;
-            border-radius: 30px;
-            border: 1px solid #4a8a9a;
-            font-weight: bold;
-            color: #7fc9d9;
-        }
-
-        .controls-info {
-            color: #8aaabc;
-            font-size: 0.8rem;
-            display: flex;
-            gap: 10px;
-        }
-
-        .controls-info span {
-            background: #0a1a2a;
-            padding: 3px 10px;
-            border-radius: 20px;
-            border: 1px solid #3a6a7a;
-        }
-
-        .bottom-nav {
-            margin-top: 15px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .btn {
-            border: none;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            font-family: inherit;
-            border-radius: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
-        .btn:hover {
-            transform: scale(1.05);
-        }
-
-        .btn-start {
-            background: #00cc88;
-            font-size: 1.3rem;
-            padding: 14px 45px;
-            box-shadow: 0 0 30px rgba(0, 204, 136, 0.4);
-        }
-
-        .btn-start:hover {
-            background: #22eeaa;
-            box-shadow: 0 0 50px rgba(0, 204, 136, 0.6);
-        }
-
-        .btn-home {
-            background: #dc3545;
-            font-size: 1rem;
-            padding: 10px 30px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-home:hover {
-            background: #ff4d5d;
-            box-shadow: 0 0 20px rgba(220, 53, 69, 0.5);
-        }
-
-        @media (max-width: 850px) {
-            canvas {
-                width: 100%;
-                height: auto;
-            }
-
-            .pantalla-overlay h1 {
-                font-size: 3rem;
-            }
-
-            .ui-bar {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .character-selector {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .levels-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-    </style>
+    .win-title {
+        color: #65ff91;
+    }
+</style>
 </head>
 
 <body>
 
-<!-- ==================== INICIO ==================== -->
+<div id="game-container">
 
-<div id="pantalla-inicio" class="pantalla-overlay">
-
-    <h1>BLUE JULES</h1>
-
-    <div class="character-selector">
-
-        <div class="character-option selected" id="charRabbit">
-            <span class="emoji">🐰</span>
-            <span class="label">Conejito</span>
-        </div>
-
+    <div id="hud">
+        <div class="hud-box">❤️ Vidas: <span id="lives">3</span></div>
+        <div class="hud-box">🍚 Arroz: <span id="rice">0</span></div>
+        <div class="hud-box">🥕 Zanahorias: <span id="carrots">0</span></div>
+        <div class="hud-box">⭐ Puntos: <span id="score">0</span></div>
+        <div class="hud-box">🏦 Nivel <span id="level">1</span></div>
     </div>
-
-    <button class="btn btn-start" id="startBtn" type="button">
-        ▶ JUGAR
-    </button>
-
-</div>
-
-
-<!-- ==================== SELECCIÓN DE NIVELES ==================== -->
-
-<div id="pantalla-niveles" class="pantalla-overlay" style="display: none;">
-
-    <h1>SELECCIONAR NIVEL</h1>
-
-    <div class="levels-grid" id="levelsContainer"></div>
-
-    <button class="btn btn-home" id="levelsHomeBtn" type="button">
-        🏠 INICIO
-    </button>
-
-</div>
-
-
-<!-- ==================== JUEGO ==================== -->
-
-<div class="game-wrapper">
 
     <canvas id="gameCanvas" width="800" height="500"></canvas>
 
-    <div class="ui-bar">
+    <!-- PANTALLA PRINCIPAL -->
+    <div id="startScreen" class="overlay">
+        <h1>BLUE JULES</h1>
+        <div class="subtitle">🐰 Una aventura llena de arroz, zanahorias y bañeras 🛁</div>
 
-        <div class="ui-item">
-            <span class="icon">❤️</span>
-            <span>Vidas:</span>
-            <span class="value" id="livesDisplay">3</span>
+        <button id="startButton">🎮 JUGAR</button>
+
+        <div class="controls">
+            ← → / A D = Mover<br>
+            ↑ / W / ESPACIO = Saltar<br>
+            R = Reiniciar nivel<br>
+            I = Volver al inicio
         </div>
-
-        <div class="ui-item">
-            <span class="icon">🍚</span>
-            <span>Arroz:</span>
-            <span class="value" id="medsDisplay">0</span>
-        </div>
-
-        <div class="ui-item">
-            <span class="icon">🥕</span>
-            <span>Zanahorias:</span>
-            <span class="value" id="carrotsDisplay">0</span>
-        </div>
-
-        <div class="ui-item">
-            <span class="icon">⭐</span>
-            <span>Puntos:</span>
-            <span class="value" id="scoreDisplay">0</span>
-        </div>
-
-        <div class="level-display" id="levelDisplay">
-            🏦 Nivel 1
-        </div>
-
-        <div class="controls-info">
-            <span>⬅ ➡ Moverse</span>
-            <span>⬆ Saltar</span>
-            <span>R Reiniciar</span>
-            <span>I Inicio</span>
-        </div>
-
     </div>
 
-    <div class="bottom-nav">
+    <!-- SELECCIÓN DE PERSONAJE -->
+    <div id="characterScreen" class="overlay hidden">
+        <h2>✨ ELIGE TU PERSONAJE ✨</h2>
 
-        <button class="btn btn-home" id="homeBtn" type="button">
-            🏠 INICIO
+        <div class="characters">
+
+            <div class="character" data-character="rabbit">
+                <div class="character-icon">🐰</div>
+                <div class="character-name">Conejito</div>
+            </div>
+
+            <div class="character" data-character="prince">
+                <div class="character-icon">🤴</div>
+                <div class="character-name">Príncipe</div>
+            </div>
+
+            <div class="character" data-character="princess">
+                <div class="character-icon">👸</div>
+                <div class="character-name">Princesa</div>
+            </div>
+
+        </div>
+
+        <div id="selectedCharacter">
+            Elige un personaje
+        </div>
+
+        <button id="continueButton" disabled>
+            ▶️ COMENZAR AVENTURA
         </button>
+    </div>
 
+    <!-- GAME OVER -->
+    <div id="gameOverScreen" class="overlay hidden">
+        <h1 class="game-over-title">💀 GAME OVER</h1>
+        <p id="finalScore"></p>
+        <button id="restartButton">🔄 REINTENTAR</button>
+        <button id="homeButton">🏠 INICIO</button>
+    </div>
+
+    <!-- VICTORIA -->
+    <div id="winScreen" class="overlay hidden">
+        <h1 class="win-title">🏆 ¡GANASTE!</h1>
+        <p id="winScore"></p>
+        <button id="nextLevelButton">➡️ SIGUIENTE NIVEL</button>
+        <button id="winHomeButton">🏠 INICIO</button>
     </div>
 
 </div>
 
-
 <script>
 
-window.addEventListener('load', function() {
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+const WIDTH = canvas.width;
+const HEIGHT = canvas.height;
 
-    const livesDisplay = document.getElementById('livesDisplay');
-    const medsDisplay = document.getElementById('medsDisplay');
-    const carrotsDisplay = document.getElementById('carrotsDisplay');
-    const scoreDisplay = document.getElementById('scoreDisplay');
-    const levelDisplay = document.getElementById('levelDisplay');
+/* =========================
+   ELEMENTOS DE LA INTERFAZ
+========================= */
 
-    const startBtn = document.getElementById('startBtn');
-    const homeBtn = document.getElementById('homeBtn');
-    const levelsHomeBtn = document.getElementById('levelsHomeBtn');
+const startScreen = document.getElementById("startScreen");
+const characterScreen = document.getElementById("characterScreen");
+const gameOverScreen = document.getElementById("gameOverScreen");
+const winScreen = document.getElementById("winScreen");
 
-    const pantallaInicio = document.getElementById('pantalla-inicio');
-    const pantallaNiveles = document.getElementById('pantalla-niveles');
+const livesText = document.getElementById("lives");
+const riceText = document.getElementById("rice");
+const carrotsText = document.getElementById("carrots");
+const scoreText = document.getElementById("score");
+const levelText = document.getElementById("level");
 
-    const levelsContainer = document.getElementById('levelsContainer');
+const selectedCharacterText =
+    document.getElementById("selectedCharacter");
 
-    const charRabbit = document.getElementById('charRabbit');
+const continueButton =
+    document.getElementById("continueButton");
 
+/* =========================
+   PERSONAJES
+========================= */
 
-    /* ==================== AUDIO ==================== */
+const characters = {
+    rabbit: "🐰",
+    prince: "🤴",
+    princess: "👸"
+};
 
-    let audioCtx = null;
+let selectedCharacter = null;
 
-    function initAudio() {
+/* =========================
+   ESTADO DEL JUEGO
+========================= */
 
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
+let gameRunning = false;
+let currentLevel = 0;
 
+const game = {
+    lives: 3,
+    rice: 0,
+    carrots: 0,
+    score: 0,
+    level: 1
+};
+
+/* =========================
+   JUGADOR
+========================= */
+
+const player = {
+    x: 60,
+    y: 350,
+    width: 45,
+    height: 45,
+    vx: 0,
+    vy: 0,
+    speed: 4,
+    jumpPower: 11,
+    grounded: false
+};
+
+/* =========================
+   FÍSICA
+========================= */
+
+const gravity = 0.5;
+
+/* =========================
+   CONTROLES
+========================= */
+
+const keys = {};
+
+window.addEventListener("keydown", e => {
+
+    keys[e.key.toLowerCase()] = true;
+
+    if (
+        ["arrowup", "arrowdown", "arrowleft", "arrowright", " "]
+        .includes(e.key.toLowerCase())
+    ) {
+        e.preventDefault();
     }
 
-
-    function playSound(type) {
-
-        if (!audioCtx) return;
-
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        const now = audioCtx.currentTime;
-
-
-        if (type === 'jump') {
-
-            osc.type = 'sine';
-
-            osc.frequency.setValueAtTime(150, now);
-            osc.frequency.exponentialRampToValueAtTime(400, now + 0.15);
-
-            gain.gain.setValueAtTime(0.3, now);
-            gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
-
-            osc.start(now);
-            osc.stop(now + 0.15);
-
-        }
-
-
-        else if (type === 'rice') {
-
-            osc.type = 'triangle';
-
-            osc.frequency.setValueAtTime(523.25, now);
-            osc.frequency.setValueAtTime(659.25, now + 0.08);
-
-            gain.gain.setValueAtTime(0.2, now);
-            gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-
-            osc.start(now);
-            osc.stop(now + 0.2);
-
-        }
-
-
-        else if (type === 'carrot') {
-
-            osc.type = 'square';
-
-            osc.frequency.setValueAtTime(587.33, now);
-            osc.frequency.setValueAtTime(880, now + 0.08);
-
-            gain.gain.setValueAtTime(0.15, now);
-            gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
-
-            osc.start(now);
-            osc.stop(now + 0.25);
-
-        }
-
-
-        else if (type === 'damage') {
-
-            osc.type = 'sawtooth';
-
-            osc.frequency.setValueAtTime(220, now);
-            osc.frequency.linearRampToValueAtTime(80, now + 0.25);
-
-            gain.gain.setValueAtTime(0.3, now);
-            gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
-
-            osc.start(now);
-            osc.stop(now + 0.25);
-
-        }
-
-
-        else if (type === 'gameover') {
-
-            osc.type = 'sawtooth';
-
-            osc.frequency.setValueAtTime(300, now);
-            osc.frequency.linearRampToValueAtTime(100, now + 0.6);
-
-            gain.gain.setValueAtTime(0.4, now);
-            gain.gain.linearRampToValueAtTime(0.01, now + 0.6);
-
-            osc.start(now);
-            osc.stop(now + 0.6);
-
-        }
-
-
-        else if (type === 'win') {
-
-            osc.type = 'triangle';
-
-            osc.frequency.setValueAtTime(440, now);
-            osc.frequency.setValueAtTime(554.37, now + 0.1);
-            osc.frequency.setValueAtTime(659.25, now + 0.2);
-            osc.frequency.setValueAtTime(880, now + 0.3);
-
-            gain.gain.setValueAtTime(0.3, now);
-            gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
-
-            osc.start(now);
-            osc.stop(now + 0.5);
-
-        }
-
+    if (e.key.toLowerCase() === "r" && gameRunning) {
+        loadLevel(currentLevel);
     }
 
-
-    /* ==================== CONFIGURACIÓN ==================== */
-
-    const W = 800;
-    const H = 500;
-
-    const GRAVITY = 0.6;
-    const JUMP_FORCE = -11;
-    const MOVE_SPEED = 4.5;
-    const FRICTION = 0.85;
-
-    const TOTAL_LEVELS = 10;
-
-
-    /* ==================== ESTADO DEL JUEGO ==================== */
-
-    let game = {
-
-        player: {
-            x: 80,
-            y: 380,
-            w: 32,
-            h: 44,
-            vx: 0,
-            vy: 0,
-            onGround: false
-        },
-
-        platforms: [],
-        items: [],
-        enemies: [],
-        particles: [],
-
-        lives: 3,
-        meds: 0,
-        carrots: 0,
-        score: 0,
-
-        level: 1,
-
-        running: false,
-        gameOver: false,
-        gameComplete: false,
-
-        character: 'rabbit',
-
-        keys: {
-            left: false,
-            right: false,
-            up: false
-        }
-
-    };
-
-
-    /* ==================== NIVELES ==================== */
-
-    const LEVELS = [
-
-        {
-            platforms: [
-                {x:0,y:460,w:800,h:40},
-                {x:120,y:370,w:100,h:18},
-                {x:300,y:310,w:100,h:18},
-                {x:500,y:250,w:100,h:18},
-                {x:680,y:310,w:100,h:18},
-                {x:350,y:400,w:120,h:18}
-            ],
-
-            items: [
-                {x:160,y:340,type:'med'},
-                {x:340,y:280,type:'med'},
-                {x:540,y:220,type:'med'},
-                {x:720,y:280,type:'med'},
-                {x:390,y:370,type:'med'}
-            ],
-
-            enemies: [
-                {x:250,y:432,vx:1.5,minX:180,maxX:380},
-                {x:550,y:432,vx:1.8,minX:480,maxX:680}
-            ]
-        },
-
-
-        {
-            platforms: [
-                {x:0,y:460,w:800,h:40},
-                {x:50,y:380,w:80,h:18},
-                {x:200,y:320,w:80,h:18},
-                {x:350,y:260,w:80,h:18},
-                {x:500,y:320,w:80,h:18},
-                {x:650,y:380,w:80,h:18},
-                {x:400,y:400,w:100,h:18}
-            ],
-
-            items: [
-                {x:90,y:350,type:'med'},
-                {x:240,y:290,type:'med'},
-                {x:390,y:230,type:'med'},
-                {x:540,y:290,type:'med'},
-                {x:690,y:350,type:'med'},
-                {x:440,y:370,type:'med'}
-            ],
-
-            enemies: [
-                {x:150,y:432,vx:1.2,minX:80,maxX:280},
-                {x:450,y:432,vx:1.6,minX:350,maxX:550},
-                {x:600,y:432,vx:1.0,minX:550,maxX:700}
-            ]
-        },
-
-
-        {
-            platforms: [
-                {x:0,y:460,w:800,h:40},
-                {x:30,y:390,w:70,h:18},
-                {x:160,y:330,w:70,h:18},
-                {x:290,y:270,w:70,h:18},
-                {x:420,y:210,w:70,h:18},
-                {x:550,y:270,w:70,h:18},
-                {x:680,y:330,w:70,h:18},
-                {x:300,y:380,w:100,h:18}
-            ],
-
-            items: [
-                {x:70,y:360,type:'med'},
-                {x:200,y:300,type:'med'},
-                {x:330,y:240,type:'med'},
-                {x:460,y:180,type:'med'},
-                {x:590,y:240,type:'med'},
-                {x:720,y:300,type:'med'},
-                {x:340,y:350,type:'med'}
-            ],
-
-            enemies: [
-                {x:120,y:432,vx:1.3,minX:50,maxX:250},
-                {x:350,y:432,vx:1.7,minX:250,maxX:450},
-                {x:580,y:432,vx:1.5,minX:480,maxX:680}
-            ]
-        },
-
-
-        {
-            platforms: [
-                {x:0,y:460,w:800,h:40},
-                {x:80,y:380,w:90,h:18},
-                {x:250,y:320,w:90,h:18},
-                {x:420,y:260,w:90,h:18},
-                {x:590,y:320,w:90,h:18},
-                {x:200,y:200,w:80,h:18},
-                {x:500,y:180,w:80,h:18},
-                {x:350,y:400,w:120,h:18}
-            ],
-
-            items: [
-                {x:120,y:350,type:'med'},
-                {x:290,y:290,type:'med'},
-                {x:460,y:230,type:'med'},
-                {x:630,y:290,type:'med'},
-                {x:240,y:170,type:'med'},
-                {x:540,y:150,type:'med'},
-                {x:390,y:370,type:'med'},
-                {x:100,y:420,type:'star'}
-            ],
-
-            enemies: [
-                {x:200,y:432,vx:1.4,minX:120,maxX:320},
-                {x:500,y:432,vx:1.8,minX:400,maxX:600},
-                {x:260,y:292,vx:1.2,minX:250,maxX:340}
-            ]
-        },
-
-
-        {
-            platforms: [
-                {x:0,y:460,w:800,h:40},
-                {x:50,y:390,w:60,h:18},
-                {x:170,y:330,w:60,h:18},
-                {x:290,y:270,w:60,h:18},
-                {x:410,y:210,w:60,h:18},
-                {x:530,y:270,w:60,h:18},
-                {x:650,y:330,w:60,h:18},
-                {x:770,y:390,w:60,h:18},
-                {x:350,y:380,w:100,h:18}
-            ],
-
-            items: [
-                {x:90,y:360,type:'med'},
-                {x:210,y:300,type:'med'},
-                {x:330,y:240,type:'med'},
-                {x:450,y:180,type:'med'},
-                {x:570,y:240,type:'med'},
-                {x:690,y:300,type:'med'},
-                {x:380,y:350,type:'med'}
-            ],
-
-            enemies: [
-                {x:130,y:432,vx:1.5,minX:60,maxX:260},
-                {x:330,y:432,vx:1.7,minX:230,maxX:430},
-                {x:530,y:432,vx:1.9,minX:430,maxX:630}
-            ]
-        },
-
-
-        {
-            platforms: [
-                {x:0,y:460,w:800,h:40},
-                {x:100,y:370,w:80,h:18},
-                {x:280,y:310,w:80,h:18},
-                {x:460,y:250,w:80,h:18},
-                {x:640,y:310,w:80,h:18},
-                {x:190,y:200,w:80,h:18},
-                {x:550,y:180,w:80,h:18},
-                {x:370,y:400,w:100,h:18}
-            ],
-
-            items: [
-                {x:140,y:340,type:'med'},
-                {x:320,y:280,type:'med'},
-                {x:500,y:220,type:'med'},
-                {x:680,y:280,type:'med'},
-                {x:230,y:170,type:'med'},
-                {x:590,y:150,type:'med'},
-                {x:410,y:370,type:'med'}
-            ],
-
-            enemies: [
-                {x:180,y:432,vx:1.6,minX:110,maxX:310},
-                {x:400,y:432,vx:1.8,minX:300,maxX:500},
-                {x:620,y:432,vx:2.0,minX:520,maxX:720}
-            ]
-        },
-
-
-        {
-            platforms: [
-                {x:0,y:460,w:800,h:40},
-                {x:40,y:400,w:60,h:18},
-                {x:160,y:340,w:60,h:18},
-                {x:280,y:280,w:60,h:18},
-                {x:400,y:220,w:60,h:18},
-                {x:520,y:280,w:60,h:18},
-                {x:640,y:340,w:60,h:18},
-                {x:300,y:150,w:80,h:18}
-            ],
-
-            items: [
-                {x:80,y:370,type:'med'},
-                {x:200,y:310,type:'med'},
-                {x:320,y:250,type:'med'},
-                {x:440,y:190,type:'med'},
-                {x:560,y:250,type:'med'},
-                {x:680,y:310,type:'med'},
-                {x:340,y:120,type:'med'},
-                {x:200,y:420,type:'star'}
-            ],
-
-            enemies: [
-                {x:120,y:432,vx:1.5,minX:50,maxX:250},
-                {x:320,y:432,vx:1.7,minX:220,maxX:420},
-                {x:520,y:432,vx:1.9,minX:420,maxX:620}
-            ]
-        },
-
-
-        {
-            platforms: [
-                {x:0,y:460,w:800,h:40},
-                {x:60,y:380,w:70,h:18},
-                {x:200,y:320,w:70,h:18},
-                {x:340,y:260,w:70,h:18},
-                {x:480,y:200,w:70,h:18},
-                {x:620,y:260,w:70,h:18},
-                {x:150,y:170,w:70,h:18}
-            ],
-
-            items: [
-                {x:100,y:350,type:'med'},
-                {x:240,y:290,type:'med'},
-                {x:380,y:230,type:'med'},
-                {x:520,y:170,type:'med'},
-                {x:660,y:230,type:'med'},
-                {x:190,y:140,type:'med'}
-            ],
-
-            enemies: [
-                {x:140,y:432,vx:1.6,minX:70,maxX:270},
-                {x:340,y:432,vx:1.8,minX:240,maxX:440},
-                {x:540,y:432,vx:2.0,minX:440,maxX:640}
-            ]
-        },
-
-
-        {
-            platforms: [
-                {x:0,y:460,w:800,h:40},
-                {x:30,y:400,w:50,h:18},
-                {x:140,y:340,w:50,h:18},
-                {x:250,y:280,w:50,h:18},
-                {x:360,y:220,w:50,h:18},
-                {x:470,y:160,w:50,h:18},
-                {x:580,y:220,w:50,h:18},
-                {x:690,y:280,w:50,h:18}
-            ],
-
-            items: [
-                {x:70,y:370,type:'med'},
-                {x:180,y:310,type:'med'},
-                {x:290,y:250,type:'med'},
-                {x:400,y:190,type:'med'},
-                {x:510,y:130,type:'med'},
-                {x:620,y:190,type:'med'},
-                {x:730,y:250,type:'med'},
-                {x:500,y:420,type:'star'}
-            ],
-
-            enemies: [
-                {x:100,y:432,vx:1.5,minX:30,maxX:230},
-                {x:300,y:432,vx:1.8,minX:200,maxX:400},
-                {x:500,y:432,vx:2.0,minX:400,maxX:600}
-            ]
-        },
-
-
-        {
-            platforms: [
-                {x:0,y:460,w:800,h:40},
-                {x:60,y:380,w:60,h:18},
-                {x:180,y:320,w:60,h:18},
-                {x:300,y:260,w:60,h:18},
-                {x:420,y:200,w:60,h:18},
-                {x:540,y:260,w:60,h:18},
-                {x:660,y:320,w:60,h:18},
-                {x:340,y:120,w:60,h:18}
-            ],
-
-            items: [
-                {x:100,y:350,type:'med'},
-                {x:220,y:290,type:'med'},
-                {x:340,y:230,type:'med'},
-                {x:460,y:170,type:'med'},
-                {x:580,y:230,type:'med'},
-                {x:700,y:290,type:'med'},
-                {x:380,y:90,type:'med'},
-                {x:400,y:420,type:'star'}
-            ],
-
-            enemies: [
-                {x:120,y:432,vx:1.6,minX:60,maxX:260},
-                {x:320,y:432,vx:1.8,minX:220,maxX:420},
-                {x:520,y:432,vx:2.0,minX:420,maxX:620},
-                {x:220,y:292,vx:1.3,minX:180,maxX:300}
-            ]
-        }
-
-    ];
-
-
-    /* ==================== MENÚ DE NIVELES ==================== */
-
-    for (let i = 1; i <= TOTAL_LEVELS; i++) {
-
-        const btn = document.createElement('div');
-
-        btn.className = 'level-card';
-
-        btn.textContent = `🏦 Nivel ${i}`;
-
-        btn.onclick = function() {
-
-            initAudio();
-
-            game.level = i;
-
-            pantallaNiveles.style.display = 'none';
-
-            loadLevel(i);
-
-        };
-
-        levelsContainer.appendChild(btn);
-
+    if (e.key.toLowerCase() === "i") {
+        showStartScreen();
+    }
+});
+
+window.addEventListener("keyup", e => {
+    keys[e.key.toLowerCase()] = false;
+});
+
+/* =========================
+   NIVELES
+========================= */
+
+const levels = [
+
+    {
+        platforms: [
+            {x:0, y:450, w:800, h:50},
+            {x:120, y:370, w:150, h:20},
+            {x:330, y:300, w:140, h:20},
+            {x:540, y:370, w:140, h:20},
+            {x:650, y:260, w:100, h:20}
+        ],
+
+        rice: [
+            {x:180, y:330},
+            {x:390, y:260},
+            {x:590, y:330},
+            {x:690, y:220}
+        ],
+
+        carrots: [
+            {x:250, y:420},
+            {x:450, y:420},
+            {x:730, y:420}
+        ],
+
+        enemies: [
+            {x:300, y:410, w:45, h:40, vx:1.5},
+            {x:500, y:410, w:45, h:40, vx:-1.5}
+        ]
+    },
+
+    {
+        platforms: [
+            {x:0, y:450, w:800, h:50},
+            {x:80, y:350, w:120, h:20},
+            {x:260, y:280, w:130, h:20},
+            {x:460, y:350, w:130, h:20},
+            {x:650, y:250, w:100, h:20}
+        ],
+
+        rice: [
+            {x:120, y:310},
+            {x:300, y:240},
+            {x:500, y:310},
+            {x:690, y:210}
+        ],
+
+        carrots: [
+            {x:220, y:420},
+            {x:400, y:420},
+            {x:620, y:420}
+        ],
+
+        enemies: [
+            {x:210, y:410, w:45, h:40, vx:2},
+            {x:590, y:410, w:45, h:40, vx:-2}
+        ]
+    },
+
+    {
+        platforms: [
+            {x:0, y:450, w:800, h:50},
+            {x:100, y:360, w:120, h:20},
+            {x:300, y:300, w:120, h:20},
+            {x:500, y:360, w:120, h:20},
+            {x:680, y:290, w:100, h:20}
+        ],
+
+        rice: [
+            {x:140, y:320},
+            {x:340, y:260},
+            {x:540, y:320},
+            {x:720, y:250}
+        ],
+
+        carrots: [
+            {x:250, y:420},
+            {x:450, y:420},
+            {x:700, y:420}
+        ],
+
+        enemies: [
+            {x:230, y:410, w:45, h:40, vx:1.7},
+            {x:620, y:410, w:45, h:40, vx:-1.7}
+        ]
+    },
+
+    {
+        platforms: [
+            {x:0, y:450, w:800, h:50},
+            {x:70, y:340, w:120, h:20},
+            {x:240, y:250, w:130, h:20},
+            {x:430, y:340, w:130, h:20},
+            {x:620, y:230, w:130, h:20}
+        ],
+
+        rice: [
+            {x:110, y:300},
+            {x:280, y:210},
+            {x:470, y:300},
+            {x:660, y:190}
+        ],
+
+        carrots: [
+            {x:200, y:420},
+            {x:400, y:420},
+            {x:600, y:420}
+        ],
+
+        enemies: [
+            {x:190, y:410, w:45, h:40, vx:2},
+            {x:570, y:410, w:45, h:40, vx:-2}
+        ]
+    },
+
+    {
+        platforms: [
+            {x:0, y:450, w:800, h:50},
+            {x:130, y:330, w:130, h:20},
+            {x:340, y:250, w:130, h:20},
+            {x:550, y:330, w:130, h:20},
+            {x:700, y:220, w:80, h:20}
+        ],
+
+        rice: [
+            {x:170, y:290},
+            {x:380, y:210},
+            {x:590, y:290},
+            {x:730, y:180}
+        ],
+
+        carrots: [
+            {x:280, y:420},
+            {x:480, y:420},
+            {x:700, y:420}
+        ],
+
+        enemies: [
+            {x:270, y:410, w:45, h:40, vx:1.8},
+            {x:640, y:410, w:45, h:40, vx:-1.8}
+        ]
+    },
+
+    {
+        platforms: [
+            {x:0, y:450, w:800, h:50},
+            {x:100, y:350, w:100, h:20},
+            {x:250, y:280, w:120, h:20},
+            {x:430, y:350, w:120, h:20},
+            {x:600, y:270, w:120, h:20}
+        ],
+
+        rice: [
+            {x:130, y:310},
+            {x:290, y:240},
+            {x:470, y:310},
+            {x:640, y:230}
+        ],
+
+        carrots: [
+            {x:220, y:420},
+            {x:400, y:420},
+            {x:650, y:420}
+        ],
+
+        enemies: [
+            {x:200, y:410, w:45, h:40, vx:2},
+            {x:560, y:410, w:45, h:40, vx:-2}
+        ]
+    },
+
+    {
+        platforms: [
+            {x:0, y:450, w:800, h:50},
+            {x:80, y:360, w:130, h:20},
+            {x:290, y:290, w:130, h:20},
+            {x:500, y:350, w:120, h:20},
+            {x:660, y:240, w:110, h:20}
+        ],
+
+        rice: [
+            {x:120, y:320},
+            {x:330, y:250},
+            {x:540, y:310},
+            {x:700, y:200}
+        ],
+
+        carrots: [
+            {x:230, y:420},
+            {x:430, y:420},
+            {x:700, y:420}
+        ],
+
+        enemies: [
+            {x:220, y:410, w:45, h:40, vx:1.5},
+            {x:620, y:410, w:45, h:40, vx:-2}
+        ]
+    },
+
+    {
+        platforms: [
+            {x:0, y:450, w:800, h:50},
+            {x:120, y:330, w:120, h:20},
+            {x:310, y:260, w:130, h:20},
+            {x:510, y:330, w:130, h:20},
+            {x:690, y:220, w:90, h:20}
+        ],
+
+        rice: [
+            {x:160, y:290},
+            {x:350, y:220},
+            {x:550, y:290},
+            {x:720, y:180}
+        ],
+
+        carrots: [
+            {x:260, y:420},
+            {x:470, y:420},
+            {x:680, y:420}
+        ],
+
+        enemies: [
+            {x:250, y:410, w:45, h:40, vx:2},
+            {x:630, y:410, w:45, h:40, vx:-2}
+        ]
+    },
+
+    {
+        platforms: [
+            {x:0, y:450, w:800, h:50},
+            {x:70, y:350, w:130, h:20},
+            {x:260, y:270, w:130, h:20},
+            {x:450, y:350, w:130, h:20},
+            {x:640, y:260, w:130, h:20}
+        ],
+
+        rice: [
+            {x:110, y:310},
+            {x:300, y:230},
+            {x:490, y:310},
+            {x:680, y:220}
+        ],
+
+        carrots: [
+            {x:210, y:420},
+            {x:420, y:420},
+            {x:650, y:420}
+        ],
+
+        enemies: [
+            {x:210, y:410, w:45, h:40, vx:1.8},
+            {x:590, y:410, w:45, h:40, vx:-1.8}
+        ]
+    },
+
+    {
+        platforms: [
+            {x:0, y:450, w:800, h:50},
+            {x:100, y:350, w:120, h:20},
+            {x:280, y:270, w:120, h:20},
+            {x:460, y:350, w:120, h:20},
+            {x:620, y:260, w:150, h:20}
+        ],
+
+        rice: [
+            {x:140, y:310},
+            {x:320, y:230},
+            {x:500, y:310},
+            {x:680, y:220}
+        ],
+
+        carrots: [
+            {x:240, y:420},
+            {x:440, y:420},
+            {x:680, y:420}
+        ],
+
+        enemies: [
+            {x:220, y:410, w:45, h:40, vx:2},
+            {x:600, y:410, w:45, h:40, vx:-2},
+            {x:380, y:410, w:45, h:40, vx:1.5}
+        ]
     }
 
+];
 
-    /* ==================== CARGAR NIVEL ==================== */
+/* =========================
+   NIVEL ACTUAL
+========================= */
 
-    function loadLevel(levelNum) {
+let platforms = [];
+let riceItems = [];
+let carrotItems = [];
+let enemies = [];
 
-        const data = LEVELS[levelNum - 1];
+/* =========================
+   FUNCIONES DE INTERFAZ
+========================= */
 
-        if (!data) return;
+function hideAllScreens() {
+    startScreen.classList.add("hidden");
+    characterScreen.classList.add("hidden");
+    gameOverScreen.classList.add("hidden");
+    winScreen.classList.add("hidden");
+}
 
+function showStartScreen() {
+    gameRunning = false;
+    hideAllScreens();
+    startScreen.classList.remove("hidden");
+}
 
-        game.platforms = data.platforms.map(p => ({ ...p }));
+document.getElementById("startButton").addEventListener("click", () => {
 
+    hideAllScreens();
 
-        game.items = data.items.map((item, index) => ({
+    characterScreen.classList.remove("hidden");
 
-            ...item,
+    selectedCharacter = null;
 
-            w: item.type === 'star' ? 24 : 20,
+    document.querySelectorAll(".character").forEach(c => {
+        c.classList.remove("selected");
+    });
 
-            h: item.type === 'star' ? 24 : 20,
+    selectedCharacterText.textContent =
+        "Elige un personaje";
 
-            collected: false,
+    continueButton.disabled = true;
+});
 
-            id: index
+/* =========================
+   SELECCIÓN DE PERSONAJE
+========================= */
 
-        }));
+document.querySelectorAll(".character").forEach(card => {
 
+    card.addEventListener("click", () => {
 
-        game.enemies = data.enemies.map(e => ({
+        document.querySelectorAll(".character").forEach(c => {
+            c.classList.remove("selected");
+        });
 
-            ...e,
+        card.classList.add("selected");
 
-            w: 28,
-            h: 28
+        selectedCharacter =
+            card.dataset.character;
 
-        }));
+        let name = "";
 
-
-        game.player.x = 80;
-        game.player.y = 380;
-
-        game.player.vx = 0;
-        game.player.vy = 0;
-
-        game.player.onGround = false;
-
-
-        game.meds = 0;
-        game.carrots = 0;
-
-        game.running = true;
-
-        game.gameOver = false;
-        game.gameComplete = false;
-
-        game.particles = [];
-
-
-        levelDisplay.textContent = `🏦 Nivel ${levelNum}`;
-
-        updateUI();
-
-    }
-
-
-    /* ==================== PARTÍCULAS ==================== */
-
-    function createParticles(x, y, color, count) {
-
-        for (let i = 0; i < count; i++) {
-
-            game.particles.push({
-
-                x: x,
-                y: y,
-
-                vx: (Math.random() - 0.5) * 8,
-                vy: (Math.random() - 0.5) * 8,
-
-                life: 30,
-
-                color: color
-
-            });
-
+        if (selectedCharacter === "rabbit") {
+            name = "🐰 Conejito";
         }
 
-    }
-
-
-    /* ==================== SIGUIENTE NIVEL ==================== */
-
-    function nextLevel() {
-
-        if (game.level < TOTAL_LEVELS) {
-
-            game.level++;
-
-            loadLevel(game.level);
-
-            createParticles(
-                W / 2,
-                H / 2,
-                '#66ff88',
-                30
-            );
-
+        if (selectedCharacter === "prince") {
+            name = "🤴 Príncipe";
         }
 
-        else {
-
-            game.gameComplete = true;
-
-            game.running = false;
-
-            playSound('win');
-
-            createParticles(
-                W / 2,
-                H / 2,
-                '#ffdd44',
-                60
-            );
-
+        if (selectedCharacter === "princess") {
+            name = "👸 Princesa";
         }
 
-    }
-
-
-    /* ==================== REINICIAR ==================== */
-
-    function resetGame() {
-
-        game.level = 1;
-
-        game.lives = 3;
-
-        game.score = 0;
-
-        game.meds = 0;
-
-        game.carrots = 0;
-
-        game.gameComplete = false;
-
-        loadLevel(1);
-
-    }
-
-
-    /* ==================== INICIO ==================== */
-
-    function volverAlInicio() {
-
-        game.running = false;
-
-        game.gameOver = false;
-
-        pantallaNiveles.style.display = 'none';
-
-        pantallaInicio.style.display = 'flex';
-
-    }
-
-
-    /* ==================== UI ==================== */
-
-    function updateUI() {
-
-        livesDisplay.textContent = game.lives;
-
-        medsDisplay.textContent = game.meds;
-
-        carrotsDisplay.textContent = game.carrots;
-
-        scoreDisplay.textContent = game.score;
-
-    }
-
-
-    /* ==================== ACTUALIZAR JUEGO ==================== */
-
-    function update() {
-
-        if (!game.running) return;
-
-
-        /* Movimiento */
-
-        if (game.keys.left) {
-
-            game.player.vx = -MOVE_SPEED;
-
-        }
-
-        else if (game.keys.right) {
-
-            game.player.vx = MOVE_SPEED;
-
-        }
-
-        else {
-
-            game.player.vx *= FRICTION;
-
-        }
-
-
-        /* Salto */
-
-        if (game.keys.up && game.player.onGround) {
-
-            game.player.vy = JUMP_FORCE;
-
-            game.player.onGround = false;
-
-            playSound('jump');
-
-        }
-
-
-        /* Gravedad */
-
-        game.player.vy += GRAVITY;
-
-        game.player.x += game.player.vx;
-        game.player.y += game.player.vy;
-
-
-        game.player.onGround = false;
-
-
-        /* Plataformas */
-
-        for (let p of game.platforms) {
-
-            if (
-                game.player.x + game.player.w > p.x &&
-                game.player.x < p.x + p.w &&
-                game.player.y + game.player.h >= p.y &&
-                game.player.y + game.player.h <= p.y + p.h + game.player.vy
-            ) {
-
-                game.player.y = p.y - game.player.h;
-
-                game.player.vy = 0;
-
-                game.player.onGround = true;
-
-            }
-
-        }
-
-
-        /* Límites */
-
-        if (game.player.x < 0)
-            game.player.x = 0;
-
-        if (game.player.x + game.player.w > W)
-            game.player.x = W - game.player.w;
-
-
-        /* Caída */
-
-        if (game.player.y > H) {
-
-            takeDamage();
-
-        }
-
-
-        /* Enemigos */
-
-        for (let e of game.enemies) {
-
-            e.x += e.vx;
-
-
-            if (
-                e.x < e.minX ||
-                e.x > e.maxX
-            ) {
-
-                e.vx *= -1;
-
-            }
-
-
-            if (
-                game.player.x < e.x + e.w &&
-                game.player.x + game.player.w > e.x &&
-                game.player.y < e.y + e.h &&
-                game.player.y + game.player.h > e.y
-            ) {
-
-                takeDamage();
-
-            }
-
-        }
-
-
-        /* Recolección */
-
-        let totalMeds = game.items.filter(
-            i => i.type === 'med'
-        ).length;
-
-        let collectedMeds = 0;
-
-
-        for (let item of game.items) {
-
-            if (
-                !item.collected &&
-                game.player.x < item.x + item.w &&
-                game.player.x + game.player.w > item.x &&
-                game.player.y < item.y + item.h &&
-                game.player.y + game.player.h > item.y
-            ) {
-
-                item.collected = true;
-
-
-                if (item.type === 'med') {
-
-                    game.meds++;
-
-                    game.score += 50;
-
-                    playSound('rice');
-
-                    createParticles(
-                        item.x,
-                        item.y,
-                        '#7fc9d9',
-                        10
-                    );
-
-                }
-
-
-                else if (item.type === 'star') {
-
-                    game.carrots++;
-
-                    game.score += 200;
-
-                    playSound('carrot');
-
-                    createParticles(
-                        item.x,
-                        item.y,
-                        '#ffdd44',
-                        15
-                    );
-
-                }
-
-
-                updateUI();
-
-            }
-
-
-            if (
-                item.type === 'med' &&
-                item.collected
-            ) {
-
-                collectedMeds++;
-
-            }
-
-        }
-
-
-        /* Completar nivel */
-
-        if (
-            collectedMeds === totalMeds &&
-            totalMeds > 0
-        ) {
-
-            nextLevel();
-
-        }
-
-
-        /* Partículas */
-
-        for (
-            let i = game.particles.length - 1;
-            i >= 0;
-            i--
-        ) {
-
-            let p = game.particles[i];
-
-            p.x += p.vx;
-            p.y += p.vy;
-
-            p.life--;
-
-
-            if (p.life <= 0) {
-
-                game.particles.splice(i, 1);
-
-            }
-
-        }
-
-    }
-
-
-    /* ==================== DAÑO ==================== */
-
-    function takeDamage() {
-
-        game.lives--;
-
-        updateUI();
-
-
-        createParticles(
-            game.player.x,
-            game.player.y,
-            '#ff4444',
-            20
-        );
-
-
-        if (game.lives <= 0) {
-
-            game.gameOver = true;
-
-            game.running = false;
-
-            playSound('gameover');
-
-        }
-
-        else {
-
-            playSound('damage');
-
-            game.player.x = 80;
-            game.player.y = 380;
-
-            game.player.vx = 0;
-            game.player.vy = 0;
-
-        }
-
-    }
-
-
-    /* ==================== DIBUJAR ==================== */
-
-    function draw() {
-
-        ctx.clearRect(0, 0, W, H);
-
-
-        /* Fondo */
-
-        ctx.fillStyle = '#b3d9e8';
-
-        ctx.fillRect(
-            0,
-            0,
-            W,
-            H
-        );
-
-
-        /* Plataformas */
-
-        ctx.fillStyle = '#2c5a6b';
-
-
-        for (let p of game.platforms) {
-
-            ctx.fillRect(
-                p.x,
-                p.y,
-                p.w,
-                p.h
-            );
-
-
-            ctx.fillStyle = '#4a8a9a';
-
-
-            ctx.fillRect(
-                p.x,
-                p.y,
-                p.w,
-                4
-            );
-
-
-            ctx.fillStyle = '#2c5a6b';
-
-        }
-
-
-        /* Objetos */
-
-        for (let item of game.items) {
-
-            if (!item.collected) {
-
-                ctx.font = '20px Arial';
-
-
-                if (item.type === 'med') {
-
-                    ctx.fillText(
-                        '🍚',
-                        item.x,
-                        item.y + 18
-                    );
-
-                }
-
-                else {
-
-                    ctx.fillText(
-                        '🥕',
-                        item.x,
-                        item.y + 18
-                    );
-
-                }
-
-            }
-
-        }
-
-
-        /* Enemigos */
-
-        for (let e of game.enemies) {
-
-            ctx.font = '24px Arial';
-
-            ctx.fillText(
-                '🛁',
-                e.x,
-                e.y + 22
-            );
-
-        }
-
-
-        /* Conejo */
-
-        if (
-            game.running ||
-            game.gameOver
-        ) {
-
-            ctx.font = '36px Arial';
-
-            ctx.fillText(
-                '🐰',
-                game.player.x - 4,
-                game.player.y + 36
-            );
-
-        }
-
-
-        /* Partículas */
-
-        for (let p of game.particles) {
-
-            ctx.fillStyle = p.color;
-
-            ctx.fillRect(
-                p.x,
-                p.y,
-                4,
-                4
-            );
-
-        }
-
-
-        /* GAME OVER */
-
-        if (game.gameOver) {
-
-            ctx.fillStyle = 'rgba(0,0,0,0.7)';
-
-            ctx.fillRect(
-                0,
-                0,
-                W,
-                H
-            );
-
-
-            ctx.fillStyle = '#ff4444';
-
-            ctx.font = 'bold 40px Arial';
-
-            ctx.textAlign = 'center';
-
-
-            ctx.fillText(
-                '¡GAME OVER!',
-                W / 2,
-                H / 2 - 30
-            );
-
-
-            ctx.fillStyle = '#ffffff';
-
-            ctx.font = '20px Arial';
-
-
-            ctx.fillText(
-                'Presiona "R" para Reiniciar',
-                W / 2,
-                H / 2 + 15
-            );
-
-
-            ctx.fillStyle = '#7fc9d9';
-
-            ctx.font = 'bold 20px Arial';
-
-
-            ctx.fillText(
-                'Presiona "I" para ir a Inicio',
-                W / 2,
-                H / 2 + 55
-            );
-
-
-            ctx.textAlign = 'left';
-
-        }
-
-
-        /* VICTORIA */
-
-        else if (game.gameComplete) {
-
-            ctx.fillStyle = 'rgba(0,0,0,0.7)';
-
-            ctx.fillRect(
-                0,
-                0,
-                W,
-                H
-            );
-
-
-            ctx.fillStyle = '#00cc88';
-
-            ctx.font = 'bold 34px Arial';
-
-            ctx.textAlign = 'center';
-
-
-            ctx.fillText(
-                '¡FELICIDADES!',
-                W / 2,
-                H / 2 - 45
-            );
-
-
-            ctx.fillText(
-                '¡BLUE JULES COMPLETADO!',
-                W / 2,
-                H / 2
-            );
-
-
-            ctx.fillStyle = '#ffffff';
-
-            ctx.font = '20px Arial';
-
-
-            ctx.fillText(
-                `Puntos: ${game.score}`,
-                W / 2,
-                H / 2 + 40
-            );
-
-
-            ctx.fillStyle = '#7fc9d9';
-
-            ctx.font = 'bold 20px Arial';
-
-
-            ctx.fillText(
-                'Presiona "I" para ir a Inicio',
-                W / 2,
-                H / 2 + 80
-            );
-
-
-            ctx.textAlign = 'left';
-
-        }
-
-    }
-
-
-    /* ==================== LOOP ==================== */
-
-    function loop() {
-
-        update();
-
-        draw();
-
-        requestAnimationFrame(loop);
-
-    }
-
-
-    /* ==================== SELECCIÓN DEL CONEJO ==================== */
-
-    charRabbit.addEventListener(
-        'click',
-        function() {
-
-            charRabbit.classList.add('selected');
-
-            game.character = 'rabbit';
-
-        }
-    );
-
-
-    /* ==================== BOTÓN JUGAR ==================== */
-
-    startBtn.addEventListener(
-        'click',
-        function() {
-
-            initAudio();
-
-            pantallaInicio.style.display = 'none';
-
-            pantallaNiveles.style.display = 'flex';
-
-        }
-    );
-
-
-    /* ==================== BOTONES INICIO ==================== */
-
-    levelsHomeBtn.addEventListener(
-        'click',
-        function() {
-
-            volverAlInicio();
-
-        }
-    );
-
-
-    homeBtn.addEventListener(
-        'click',
-        function() {
-
-            volverAlInicio();
-
-        }
-    );
-
-
-    /* ==================== TECLADO ==================== */
-
-    window.addEventListener(
-        'keydown',
-        e => {
-
-            initAudio();
-
-
-            if (
-                e.key === 'ArrowLeft' ||
-                e.key === 'a' ||
-                e.key === 'A'
-            ) {
-
-                game.keys.left = true;
-
-            }
-
-
-            if (
-                e.key === 'ArrowRight' ||
-                e.key === 'd' ||
-                e.key === 'D'
-            ) {
-
-                game.keys.right = true;
-
-            }
-
-
-            if (
-                e.key === 'ArrowUp' ||
-                e.key === 'w' ||
-                e.key === 'W' ||
-                e.key === ' '
-            ) {
-
-                game.keys.up = true;
-
-            }
-
-
-            /* Reiniciar */
-
-            if (
-                e.key === 'r' ||
-                e.key === 'R'
-            ) {
-
-                if (
-                    game.gameOver ||
-                    game.running
-                ) {
-
-                    resetGame();
-
-                }
-
-            }
-
-
-            /* Inicio */
-
-            if (
-                e.key === 'i' ||
-                e.key === 'I'
-            ) {
-
-                volverAlInicio();
-
-            }
-
-        }
-    );
-
-
-    window.addEventListener(
-        'keyup',
-        e => {
-
-            if (
-                e.key === 'ArrowLeft' ||
-                e.key === 'a' ||
-                e.key === 'A'
-            ) {
-
-                game.keys.left = false;
-
-            }
-
-
-            if (
-                e.key === 'ArrowRight' ||
-                e.key === 'd' ||
-                e.key === 'D'
-            ) {
-
-                game.keys.right = false;
-
-            }
-
-
-            if (
-                e.key === 'ArrowUp' ||
-                e.key === 'w' ||
-                e.key === 'W' ||
-                e.key === ' '
-            ) {
-
-                game.keys.up = false;
-
-            }
-
-        }
-    );
-
-
-    /* ==================== INICIAR LOOP ==================== */
-
-    loop();
+        selectedCharacterText.textContent =
+            "Has elegido: " + name;
+
+        continueButton.disabled = false;
+    });
 
 });
+
+/* =========================
+   COMENZAR
+========================= */
+
+continueButton.addEventListener("click", () => {
+
+    if (!selectedCharacter) return;
+
+    hideAllScreens();
+
+    game.lives = 3;
+    game.rice = 0;
+    game.carrots = 0;
+    game.score = 0;
+    currentLevel = 0;
+    game.level = 1;
+
+    loadLevel(currentLevel);
+
+    gameRunning = true;
+});
+
+/* =========================
+   CARGAR NIVEL
+========================= */
+
+function loadLevel(index) {
+
+    const level = levels[index];
+
+    platforms = level.platforms.map(p => ({...p}));
+
+    riceItems = level.rice.map(item => ({
+        x: item.x,
+        y: item.y,
+        collected: false
+    }));
+
+    carrotItems = level.carrots.map(item => ({
+        x: item.x,
+        y: item.y,
+        collected: false
+    }));
+
+    enemies = level.enemies.map(e => ({
+        ...e
+    }));
+
+    player.x = 50;
+    player.y = 390;
+    player.vx = 0;
+    player.vy = 0;
+
+    game.rice = 0;
+
+    levelText.textContent = game.level;
+
+    updateHUD();
+}
+
+/* =========================
+   ACTUALIZAR HUD
+========================= */
+
+function updateHUD() {
+
+    livesText.textContent = game.lives;
+    riceText.textContent = game.rice;
+    carrotsText.textContent = game.carrots;
+    scoreText.textContent = game.score;
+    levelText.textContent = game.level;
+
+}
+
+/* =========================
+   COLISIONES
+========================= */
+
+function collision(a, b) {
+
+    return (
+        a.x < b.x + b.w &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.h &&
+        a.y + a.height > b.y
+    );
+}
+
+/* =========================
+   ACTUALIZAR JUGADOR
+========================= */
+
+function updatePlayer() {
+
+    player.vx = 0;
+
+    if (keys["arrowleft"] || keys["a"]) {
+        player.vx = -player.speed;
+    }
+
+    if (keys["arrowright"] || keys["d"]) {
+        player.vx = player.speed;
+    }
+
+    if (
+        (keys["arrowup"] ||
+        keys["w"] ||
+        keys[" "]) &&
+        player.grounded
+    ) {
+
+        player.vy = -player.jumpPower;
+        player.grounded = false;
+    }
+
+    player.vy += gravity;
+
+    player.x += player.vx;
+    player.y += player.vy;
+
+    if (player.x < 0) {
+        player.x = 0;
+    }
+
+    if (player.x + player.width > WIDTH) {
+        player.x = WIDTH - player.width;
+    }
+
+    player.grounded = false;
+
+    for (const p of platforms) {
+
+        if (
+            player.x < p.x + p.w &&
+            player.x + player.width > p.x &&
+            player.y + player.height <= p.y + 15 &&
+            player.y + player.height + player.vy >= p.y
+        ) {
+
+            player.y = p.y - player.height;
+            player.vy = 0;
+            player.grounded = true;
+        }
+    }
+
+    if (player.y > HEIGHT + 50) {
+
+        loseLife();
+    }
+}
+
+/* =========================
+   ACTUALIZAR ENEMIGOS
+========================= */
+
+function updateEnemies() {
+
+    for (const enemy of enemies) {
+
+        enemy.x += enemy.vx;
+
+        if (
+            enemy.x < 0 ||
+            enemy.x + enemy.w > WIDTH
+        ) {
+            enemy.vx *= -1;
+        }
+
+        if (collision(player, enemy)) {
+
+            if (player.vy > 0 &&
+                player.y + player.height - 10 < enemy.y + 15) {
+
+                enemy.x = -100;
+                game.score += 100;
+                player.vy = -7;
+
+            } else {
+
+                loseLife();
+                return;
+            }
+        }
+    }
+}
+
+/* =========================
+   RECOLECTAR ARROZ
+========================= */
+
+function updateRice() {
+
+    for (const item of riceItems) {
+
+        if (item.collected) continue;
+
+        const dx =
+            player.x + player.width / 2 - item.x;
+
+        const dy =
+            player.y + player.height / 2 - item.y;
+
+        const distance =
+            Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 35) {
+
+            item.collected = true;
+
+            game.rice++;
+            game.score += 50;
+
+            updateHUD();
+        }
+    }
+}
+
+/* =========================
+   RECOLECTAR ZANAHORIAS
+========================= */
+
+function updateCarrots() {
+
+    for (const item of carrotItems) {
+
+        if (item.collected) continue;
+
+        const dx =
+            player.x + player.width / 2 - item.x;
+
+        const dy =
+            player.y + player.height / 2 - item.y;
+
+        const distance =
+            Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 35) {
+
+            item.collected = true;
+
+            game.carrots++;
+            game.score += 200;
+
+            updateHUD();
+        }
+    }
+}
+
+/* =========================
+   PERDER VIDA
+========================= */
+
+function loseLife() {
+
+    game.lives--;
+
+    updateHUD();
+
+    if (game.lives <= 0) {
+
+        gameRunning = false;
+
+        document.getElementById("finalScore").textContent =
+            "Puntos: " + game.score;
+
+        hideAllScreens();
+
+        gameOverScreen.classList.remove("hidden");
+
+    } else {
+
+        player.x = 50;
+        player.y = 390;
+        player.vx = 0;
+        player.vy = 0;
+    }
+}
+
+/* =========================
+   COMPROBAR NIVEL
+========================= */
+
+function checkLevelComplete() {
+
+    const allRiceCollected =
+        riceItems.every(item => item.collected);
+
+    if (allRiceCollected) {
+
+        gameRunning = false;
+
+        document.getElementById("winScore").textContent =
+            "Nivel completado · Puntos: " + game.score;
+
+        hideAllScreens();
+
+        winScreen.classList.remove("hidden");
+    }
+}
+
+/* =========================
+   SIGUIENTE NIVEL
+========================= */
+
+document.getElementById("nextLevelButton")
+.addEventListener("click", () => {
+
+    currentLevel++;
+
+    if (currentLevel >= levels.length) {
+
+        document.getElementById("winScore").textContent =
+            "🎉 ¡Completaste todos los niveles! Puntos: " +
+            game.score;
+
+        document.getElementById("nextLevelButton")
+            .style.display = "none";
+
+        return;
+    }
+
+    game.level++;
+
+    loadLevel(currentLevel);
+
+    hideAllScreens();
+
+    gameRunning = true;
+});
+
+/* =========================
+   REINICIAR
+========================= */
+
+document.getElementById("restartButton")
+.addEventListener("click", () => {
+
+    game.lives = 3;
+    game.rice = 0;
+    game.carrots = 0;
+
+    loadLevel(currentLevel);
+
+    hideAllScreens();
+
+    gameRunning = true;
+});
+
+/* =========================
+   VOLVER A INICIO
+========================= */
+
+document.getElementById("homeButton")
+.addEventListener("click", () => {
+
+    showStartScreen();
+});
+
+document.getElementById("winHomeButton")
+.addEventListener("click", () => {
+
+    showStartScreen();
+});
+
+/* =========================
+   DIBUJAR TEXTO EMOJI
+========================= */
+
+function drawEmoji(emoji, x, y, size) {
+
+    ctx.font = size + "px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.fillText(emoji, x, y);
+}
+
+/* =========================
+   DIBUJAR FONDO
+========================= */
+
+function drawBackground() {
+
+    const gradient =
+        ctx.createLinearGradient(0, 0, 0, HEIGHT);
+
+    gradient.addColorStop(0, "#75cfff");
+    gradient.addColorStop(1, "#dff8ff");
+
+    ctx.fillStyle = gradient;
+
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+    // Nubes
+
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+
+    ctx.beginPath();
+    ctx.arc(100, 80, 25, 0, Math.PI * 2);
+    ctx.arc(130, 75, 35, 0, Math.PI * 2);
+    ctx.arc(165, 85, 25, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(570, 100, 25, 0, Math.PI * 2);
+    ctx.arc(605, 90, 35, 0, Math.PI * 2);
+    ctx.arc(640, 100, 25, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+/* =========================
+   DIBUJAR PLATAFORMAS
+========================= */
+
+function drawPlatforms() {
+
+    for (const p of platforms) {
+
+        ctx.fillStyle = "#4f8f3b";
+
+        ctx.fillRect(
+            p.x,
+            p.y,
+            p.w,
+            p.h
+        );
+
+        ctx.fillStyle = "#77c957";
+
+        ctx.fillRect(
+            p.x,
+            p.y,
+            p.w,
+            6
+        );
+    }
+}
+
+/* =========================
+   DIBUJAR ARROZ
+========================= */
+
+function drawRice() {
+
+    for (const item of riceItems) {
+
+        if (!item.collected) {
+
+            drawEmoji(
+                "🍚",
+                item.x,
+                item.y,
+                30
+            );
+        }
+    }
+}
+
+/* =========================
+   DIBUJAR ZANAHORIAS
+========================= */
+
+function drawCarrots() {
+
+    for (const item of carrotItems) {
+
+        if (!item.collected) {
+
+            drawEmoji(
+                "🥕",
+                item.x,
+                item.y,
+                32
+            );
+        }
+    }
+}
+
+/* =========================
+   DIBUJAR ENEMIGOS
+========================= */
+
+function drawEnemies() {
+
+    for (const enemy of enemies) {
+
+        if (enemy.x > -100) {
+
+            drawEmoji(
+                "🛁",
+                enemy.x + enemy.w / 2,
+                enemy.y + enemy.h / 2,
+                40
+            );
+        }
+    }
+}
+
+/* =========================
+   DIBUJAR JUGADOR
+========================= */
+
+function drawPlayer() {
+
+    if (!selectedCharacter) return;
+
+    const emoji =
+        characters[selectedCharacter];
+
+    drawEmoji(
+        emoji,
+        player.x + player.width / 2,
+        player.y + player.height / 2,
+        43
+    );
+}
+
+/* =========================
+   DIBUJAR BANCO
+========================= */
+
+function drawBank() {
+
+    drawEmoji(
+        "🏦",
+        750,
+        55,
+        35
+    );
+}
+
+/* =========================
+   DIBUJAR TODO
+========================= */
+
+function draw() {
+
+    drawBackground();
+
+    drawPlatforms();
+
+    drawRice();
+
+    drawCarrots();
+
+    drawEnemies();
+
+    drawPlayer();
+
+    drawBank();
+}
+
+/* =========================
+   GAME LOOP
+========================= */
+
+function gameLoop() {
+
+    if (gameRunning) {
+
+        updatePlayer();
+        updateEnemies();
+        updateRice();
+        updateCarrots();
+        checkLevelComplete();
+
+        draw();
+    } else {
+
+        draw();
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+/* =========================
+   INICIAR
+========================= */
+
+loadLevel(0);
+
+draw();
+
+gameLoop();
 
 </script>
 
