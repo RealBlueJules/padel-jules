@@ -250,6 +250,10 @@
     <!-- VICTORIA -->
     <div id="winScreen" class="overlay hidden">
         <h1 class="win-title">🏆 ¡GANASTE!</h1>
+        
+        <!-- VIDEO DE VICTORIA -->
+        <video id="winVideo" src="justino win.mp4" width="400" style="border-radius: 12px; margin-bottom: 20px; box-shadow: 0 0 20px rgba(101, 255, 145, 0.4);"></video>
+        
         <p id="winScore"></p>
         <button id="nextLevelButton">➡️ SIGUIENTE NIVEL</button>
         <button id="winHomeButton">🏠 INICIO</button>
@@ -273,6 +277,7 @@ const startScreen = document.getElementById("startScreen");
 const characterScreen = document.getElementById("characterScreen");
 const gameOverScreen = document.getElementById("gameOverScreen");
 const winScreen = document.getElementById("winScreen");
+const winVideo = document.getElementById("winVideo"); // REFERENCIA AL VIDEO
 
 const livesText = document.getElementById("lives");
 const riceText = document.getElementById("rice");
@@ -1016,7 +1021,7 @@ function loseLife() {
 }
 
 /* =========================
-   COMPROBAR NIVEL
+   COMPROBAR NIVEL (CON VIDEO)
 ========================= */
 
 function checkLevelComplete() {
@@ -1034,6 +1039,10 @@ function checkLevelComplete() {
         hideAllScreens();
 
         winScreen.classList.remove("hidden");
+        
+        // REPRODUCIR EL VIDEO AL GANAR EL NIVEL
+        winVideo.currentTime = 0; 
+        winVideo.play().catch(e => console.log("El navegador bloqueó el autoplay", e));
     }
 }
 
@@ -1043,6 +1052,8 @@ function checkLevelComplete() {
 
 document.getElementById("nextLevelButton")
 .addEventListener("click", () => {
+
+    winVideo.pause(); // PAUSAR VIDEO
 
     currentLevel++;
 
@@ -1098,6 +1109,7 @@ document.getElementById("homeButton")
 document.getElementById("winHomeButton")
 .addEventListener("click", () => {
 
+    winVideo.pause(); // PAUSAR VIDEO
     showStartScreen();
 });
 
