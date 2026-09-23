@@ -2,8 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎾 Tennis for Two - Selector de Escenarios</title>
+    <!-- CRUCIAL PARA MÓVILES: Previene el zoom al tocar dos veces -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎾 Tennis for Two - Mobile Multiplayer</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -11,23 +12,26 @@
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; font-family: 'Courier New', monospace; color: #fff;
             overflow: hidden; 
+            /* Previene gestos de navegación y "gomas" en iOS/Android */
+            touch-action: none; 
+            overscroll-behavior: none;
         }
         .game-container {
-            background: #111128; padding: 25px; border-radius: 20px;
+            background: #111128; padding: 15px; border-radius: 20px;
             box-shadow: 0 0 60px rgba(0, 200, 255, 0.1);
             border: 1px solid #00ccff44; text-align: center; position: relative;
+            width: 100%; max-width: 900px;
         }
         
-        /* Panel de selección superior */
         .settings-bar {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 15px; padding: 10px 15px; background: #0f0f2a;
-            border-radius: 12px; border: 1px solid #00ccff44; flex-wrap: wrap; gap: 15px;
+            margin-bottom: 10px; padding: 8px 15px; background: #0f0f2a;
+            border-radius: 12px; border: 1px solid #00ccff44; flex-wrap: wrap; gap: 10px;
         }
         select, input[type="checkbox"] {
             background: #1a1a3e; color: #00ccff; border: 1px solid #00ccff66;
             padding: 5px 10px; border-radius: 5px; font-family: 'Courier New', monospace;
-            cursor: pointer; outline: none;
+            cursor: pointer; outline: none; font-size: 0.9rem;
         }
         .checkbox-label {
             display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #88ddff; cursor: pointer;
@@ -35,39 +39,35 @@
 
         canvas {
             display: block; margin: 0 auto; border-radius: 12px;
-            /* El fondo base si no hay imagen */
-            background-color: #0f1a2f; 
-            background-size: cover;
-            background-position: center;
+            background-color: #0f1a2f; background-size: cover; background-position: center;
             box-shadow: inset 0 0 50px rgba(0,0,0,0.7);
-            width: 800px; height: 400px; cursor: default;
+            width: 100%; max-width: 800px; /* Adaptable a pantallas pequeñas */
+            aspect-ratio: 2/1; /* Mantiene la proporción 800x400 */
+            cursor: default;
             touch-action: none;
             transition: background-image 0.3s ease-in-out;
+            -webkit-tap-highlight-color: transparent; /* Quita el destello azul al tocar en móviles */
         }
+        
         .controls {
             display: flex; justify-content: space-between; align-items: center;
-            margin-top: 18px; padding: 10px 18px; background: #0f0f2a;
+            margin-top: 15px; padding: 10px 18px; background: #0f0f2a;
             border-radius: 50px; border: 1px solid #00ccff44; flex-wrap: wrap; gap: 10px;
-        }
-        .controls div { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
-        .key {
-            background: #1a1a3e; padding: 4px 12px; border-radius: 30px;
-            border: 1px solid #00ccff66; color: #00ccff; font-weight: bold; font-size: 0.8rem;
         }
         .score { font-size: 1.6rem; font-weight: bold; color: #fff; text-shadow: 0 0 20px #00ccff; letter-spacing: 3px; }
         .btn {
-            background: #00ccff; border: none; color: #0a0a1a; padding: 7px 22px;
+            background: #00ccff; border: none; color: #0a0a1a; padding: 8px 20px;
             border-radius: 40px; font-weight: bold; cursor: pointer; transition: 0.3s;
             font-size: 0.95rem; font-family: 'Courier New', monospace;
         }
-        .btn:hover { transform: scale(1.05); box-shadow: 0 0 30px #00ccff; }
         .btn-hidden { visibility: hidden; pointer-events: none; }
-        .stats { position: absolute; top: -30px; left: 20px; font-size: 0.8rem; color: #6699bb; }
+        .stats { position: absolute; top: -25px; left: 15px; font-size: 0.8rem; color: #6699bb; }
         
-        @media (max-width: 850px) {
-            canvas { width: 100%; height: auto; }
-            .controls, .settings-bar { flex-direction: column; align-items: stretch; text-align: center; }
-            .controls div, .settings-bar div { justify-content: center; }
+        /* Ajustes para móviles en horizontal */
+        @media (max-height: 500px) {
+            .game-container { padding: 5px; }
+            .settings-bar, .controls { padding: 5px; margin: 5px 0; }
+            .stats { display: none; } /* Oculta stats para ganar espacio */
         }
     </style>
 </head>
@@ -75,10 +75,8 @@
 <div class="game-container">
     <div class="stats" id="statsDisplay">Victorias - J1: 0 | J2/IA: 0</div>
     
-    <!-- Selector de Escenario y Música -->
     <div class="settings-bar">
         <div>
-            <label style="color: #6699bb; font-size: 0.9rem;">Escenario: </label>
             <select id="stageSelect">
                 <option value="canchajusto.jpg">Justo Sierra</option>
                 <option value="canchaazul.jpg">Cancha Azul</option>
@@ -86,24 +84,18 @@
             </select>
         </div>
         <label class="checkbox-label">
-            <input type="checkbox" id="musicToggle" checked>
-            🎵 Música de fondo
+            <input type="checkbox" id="musicToggle" checked>🎵 Música
         </label>
+        <button class="btn" id="fullscreenBtn" style="padding: 4px 12px; font-size: 0.8rem;">[ ] Fullscreen</button>
     </div>
 
     <canvas id="gameCanvas" width="800" height="400"></canvas>
     
     <div class="controls">
-        <div>
-            <span class="key">W / S</span>
-            <span style="color:#aaa;">J1</span>
-        </div>
+        <div style="color:#aaa; font-size: 0.8rem;">J1: Mitad Izquierda</div>
         <div class="score" id="scoreDisplay">0 - 0</div>
-        <div>
-            <span style="color:#aaa;">J2 / CPU</span>
-            <span class="key">⬆ / ⬇</span>
-        </div>
         <button class="btn" id="resetBtn">⟳ Reiniciar</button>
+        <div style="color:#aaa; font-size: 0.8rem;">J2: Mitad Derecha</div>
     </div>
 </div>
 
@@ -116,40 +108,39 @@
         const statsDisplay = document.getElementById('statsDisplay');
         const stageSelect = document.getElementById('stageSelect');
         const musicToggle = document.getElementById('musicToggle');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
 
-        // --- Configuración de Música (Loop Infinito) ---
+        // Pantalla Completa para mejor experiencia móvil
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        // Música
         const bgMusic = new Audio('electricsoundtrack.mp3');
         bgMusic.loop = true;
         bgMusic.volume = 0.5;
 
-        // Control manual del toggle de música
         musicToggle.addEventListener('change', (e) => {
-            if (e.target.checked && game.started) {
-                bgMusic.play().catch(err => console.log(err));
-            } else {
-                bgMusic.pause();
-            }
+            if (e.target.checked && game.started) bgMusic.play().catch(e=>console.log(e));
+            else bgMusic.pause();
         });
 
-        // --- Configuración de Escenarios ---
         function updateBackground() {
-            if (stageSelect.value === 'none') {
-                canvas.style.backgroundImage = 'none';
-            } else {
-                canvas.style.backgroundImage = `url('${stageSelect.value}')`;
-            }
+            canvas.style.backgroundImage = stageSelect.value === 'none' ? 'none' : `url('${stageSelect.value}')`;
         }
         stageSelect.addEventListener('change', updateBackground);
-        updateBackground(); // Aplicar el default (canchajusto.jpg) al cargar
+        updateBackground();
 
-        // --- Efectos de sonido sintéticos (SFX) ---
         let audioCtx;
         function playSound(type) {
             if (!audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            osc.connect(gain); gain.connect(audioCtx.destination);
             
             if (type === 'hit') {
                 osc.type = 'square';
@@ -176,42 +167,22 @@
         };
 
         let stats = { j1: 0, j2: 0 };
-        if(localStorage.getItem('tennisStats')) {
-            stats = JSON.parse(localStorage.getItem('tennisStats'));
-        }
-        function updateStatsDisplay() {
-            statsDisplay.textContent = `Victorias - J1: ${stats.j1} | J2/IA: ${stats.j2}`;
-        }
+        if(localStorage.getItem('tennisStats')) stats = JSON.parse(localStorage.getItem('tennisStats'));
+        function updateStatsDisplay() { statsDisplay.textContent = `Victorias - J1: ${stats.j1} | J2/IA: ${stats.j2}`; }
         updateStatsDisplay();
 
         let game = {
             paddle1: { x: 20, y: 0, dy: 0, score: 0 },
             paddle2: { x: 0, y: 0, dy: 0, score: 0 },
             ball: { x: 0, y: 0, dx: 0, dy: 0, speed: CONFIG.ballSpeed },
-            ballTrail: [], // Rastro de la pelota para reemplazar el fillRect y mantener fondos limpios
-            running: false, winner: null, started: false, showReset: false,
+            ballTrail: [], running: false, winner: null, started: false, showReset: false,
             countdown: 3, countdownActive: false, countdownTimer: 0, firstStart: true,
             paused: false, vsCPU: false, shakeTimer: 0
         };
 
         let particles = [];
         function spawnParticles(x, y, dxDirection, baseColor) {
-            for(let i=0; i<15; i++) {
-                particles.push({
-                    x: x, y: y,
-                    vx: dxDirection * (Math.random() * 3 + 1),
-                    vy: (Math.random() - 0.5) * 6,
-                    life: 1.0, color: baseColor
-                });
-            }
-        }
-
-        function getBallColor() {
-            const ratio = (game.ball.speed - CONFIG.ballSpeed) / (CONFIG.maxSpeed - CONFIG.ballSpeed);
-            if (ratio < 0.3) return '#ffffff';
-            if (ratio < 0.6) return '#ffee00';
-            if (ratio < 0.9) return '#ff8800';
-            return '#ff2200';
+            for(let i=0; i<15; i++) particles.push({ x: x, y: y, vx: dxDirection * (Math.random() * 3 + 1), vy: (Math.random() - 0.5) * 6, life: 1.0, color: baseColor });
         }
 
         function resetPositions() {
@@ -222,18 +193,15 @@
             
             game.ball.x = CONFIG.width/2; game.ball.y = CONFIG.height/2;
             const angle = (Math.random() * 0.8 + 0.2) * (Math.random() > 0.5 ? 1 : -1);
-            game.ball.dx = Math.cos(angle) * CONFIG.ballSpeed;
-            game.ball.dy = Math.sin(angle) * CONFIG.ballSpeed;
+            game.ball.dx = Math.cos(angle) * CONFIG.ballSpeed; game.ball.dy = Math.sin(angle) * CONFIG.ballSpeed;
             game.ball.speed = CONFIG.ballSpeed;
             
-            game.ballTrail = [];
-            game.winner = null; game.running = false; particles = [];
+            game.ballTrail = []; game.winner = null; game.running = false; particles = [];
         }
 
         function resetGame() {
             game.paddle1.score = 0; game.paddle2.score = 0;
-            game.started = false; game.running = false;
-            game.winner = null; game.showReset = false; game.paused = false;
+            game.started = false; game.running = false; game.winner = null; game.showReset = false; game.paused = false;
             game.countdown = 3; game.countdownActive = false; game.firstStart = true;
             resetPositions(); updateScoreDisplay(); updateResetButton();
         }
@@ -241,21 +209,13 @@
         function startGame() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            
-            // Iniciar música
-            if (musicToggle.checked && bgMusic.paused) {
-                bgMusic.play().catch(err => console.log("Autoplay de audio bloqueado", err));
-            }
+            if (musicToggle.checked && bgMusic.paused) bgMusic.play().catch(e=>console.log(e));
 
             if (!game.started) {
                 game.started = true; game.showReset = true;
                 if (game.firstStart) {
-                    game.countdown = 3; game.countdownActive = true;
-                    game.running = false; game.countdownTimer = 60;
-                    game.firstStart = false;
-                } else {
-                    resumeAfterPoint();
-                }
+                    game.countdown = 3; game.countdownActive = true; game.running = false; game.countdownTimer = 60; game.firstStart = false;
+                } else resumeAfterPoint();
                 updateScoreDisplay(); updateResetButton();
             }
         }
@@ -264,8 +224,7 @@
             resetPositions(); game.running = true;
             const angle = (Math.random() * 0.8 + 0.2) * (Math.random() > 0.5 ? 1 : -1);
             game.ball.dx = Math.cos(angle) * CONFIG.ballSpeed * (Math.random() > 0.5 ? 1 : -1);
-            game.ball.dy = Math.sin(angle) * CONFIG.ballSpeed;
-            game.ball.speed = CONFIG.ballSpeed;
+            game.ball.dy = Math.sin(angle) * CONFIG.ballSpeed; game.ball.speed = CONFIG.ballSpeed;
         }
 
         function updateScoreDisplay() { scoreDisplay.textContent = `${game.paddle1.score} - ${game.paddle2.score}`; }
@@ -283,17 +242,15 @@
             ctx.fillText('🎾 TENNIS FOR TWO', CONFIG.width/2, CONFIG.height/2 - 90);
 
             ctx.shadowBlur = 15; ctx.font = '18px "Courier New", monospace'; ctx.fillStyle = '#88ddff';
-            ctx.fillText('Selecciona tu escenario arriba y presiona Iniciar', CONFIG.width/2, CONFIG.height/2 - 20);
+            ctx.fillText('Toque para iniciar', CONFIG.width/2, CONFIG.height/2 - 20);
 
             ctx.shadowBlur = 0;
             const modeBtnY = CONFIG.height/2 + 30;
             ctx.fillStyle = game.vsCPU ? '#ff8a80' : '#1a1a3e';
             ctx.strokeStyle = game.vsCPU ? '#ff8a80' : '#00ccff66';
-            ctx.beginPath(); ctx.roundRect(CONFIG.width/2 - 100, modeBtnY, 200, 40, 20);
-            ctx.fill(); ctx.stroke();
-            ctx.fillStyle = game.vsCPU ? '#111' : '#00ccff';
-            ctx.font = 'bold 16px "Courier New"';
-            ctx.fillText(game.vsCPU ? '🤖 MODO: VS CPU' : '👥 MODO: 2 JUGADORES', CONFIG.width/2, modeBtnY + 20);
+            ctx.beginPath(); ctx.roundRect(CONFIG.width/2 - 100, modeBtnY, 200, 40, 20); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = game.vsCPU ? '#111' : '#00ccff'; ctx.font = 'bold 16px "Courier New"';
+            ctx.fillText(game.vsCPU ? '🤖 VS CPU' : '👥 2 JUGADORES (Toque lados)', CONFIG.width/2, modeBtnY + 20);
 
             const btnX = CONFIG.width/2 - 80, btnY = CONFIG.height/2 + 100;
             ctx.shadowBlur = 30; ctx.shadowColor = '#00ccff'; ctx.fillStyle = '#00ccff';
@@ -306,7 +263,14 @@
             if (game.started) return;
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
-            const mouseX = (e.clientX - rect.left) * scaleX, mouseY = (e.clientY - rect.top) * scaleY;
+            // Para toques (móvil) o clicks (PC)
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            if(!clientX) return;
+            
+            const mouseX = (clientX - rect.left) * scaleX;
+            const mouseY = (clientY - rect.top) * scaleY;
 
             if (mouseX >= CONFIG.width/2 - 80 && mouseX <= CONFIG.width/2 + 80 &&
                 mouseY >= CONFIG.height/2 + 100 && mouseY <= CONFIG.height/2 + 150) {
@@ -321,82 +285,59 @@
         function draw() {
             ctx.save();
             if (game.shakeTimer > 0) {
-                const dx = (Math.random() - 0.5) * 12;
-                const dy = (Math.random() - 0.5) * 12;
-                ctx.translate(dx, dy);
+                ctx.translate((Math.random() - 0.5) * 12, (Math.random() - 0.5) * 12);
                 game.shakeTimer--;
             }
 
-            // En lugar de oscurecer (que ocultaría las imágenes), limpiamos el canvas completo
-            // para que las imágenes JPEG de fondo configuradas en el CSS se vean perfectas.
             ctx.clearRect(0, 0, CONFIG.width, CONFIG.height);
-
-            // Red central visible
-            ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 2;
-            ctx.setLineDash([8, 12]);
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 2; ctx.setLineDash([8, 12]);
             ctx.beginPath(); ctx.moveTo(CONFIG.width/2, 0); ctx.lineTo(CONFIG.width/2, CONFIG.height); ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.beginPath(); ctx.arc(CONFIG.width/2, CONFIG.height/2, 60, 0, Math.PI*2); ctx.stroke();
+            ctx.setLineDash([]); ctx.beginPath(); ctx.arc(CONFIG.width/2, CONFIG.height/2, 60, 0, Math.PI*2); ctx.stroke();
 
             if (!game.started) { ctx.restore(); drawStartScreen(); return; }
 
-            const ballColor = getBallColor();
+            const ratio = (game.ball.speed - CONFIG.ballSpeed) / (CONFIG.maxSpeed - CONFIG.ballSpeed);
+            const ballColor = ratio < 0.3 ? '#ffffff' : ratio < 0.6 ? '#ffee00' : ratio < 0.9 ? '#ff8800' : '#ff2200';
 
-            // Dibujar rastro de la pelota (reemplaza el motion blur global)
             game.ballTrail.forEach((pos, index) => {
                 const alpha = (index + 1) / game.ballTrail.length;
-                ctx.globalAlpha = alpha * 0.4;
-                ctx.fillStyle = ballColor;
-                ctx.beginPath();
-                ctx.arc(pos.x, pos.y, CONFIG.ballRadius * (0.5 + (alpha * 0.5)), 0, Math.PI*2);
-                ctx.fill();
+                ctx.globalAlpha = alpha * 0.4; ctx.fillStyle = ballColor;
+                ctx.beginPath(); ctx.arc(pos.x, pos.y, CONFIG.ballRadius * (0.5 + (alpha * 0.5)), 0, Math.PI*2); ctx.fill();
             });
             ctx.globalAlpha = 1.0;
 
-            // Dibujar Partículas
             particles.forEach(p => {
-                ctx.globalAlpha = Math.max(0, p.life);
-                ctx.fillStyle = p.color;
+                ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color;
                 ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
             });
             ctx.globalAlpha = 1.0;
 
-            // Raquetas
             ctx.shadowBlur = 18; ctx.shadowColor = '#4fc3f7'; ctx.fillStyle = '#4fc3f7';
             ctx.fillRect(game.paddle1.x, game.paddle1.y, CONFIG.paddleWidth, CONFIG.paddleHeight);
 
             ctx.shadowColor = '#ff8a80'; ctx.fillStyle = '#ff8a80';
             ctx.fillRect(game.paddle2.x, game.paddle2.y, CONFIG.paddleWidth, CONFIG.paddleHeight);
 
-            // Pelota principal
             ctx.shadowColor = ballColor; ctx.shadowBlur = 30; ctx.fillStyle = ballColor;
             ctx.beginPath(); ctx.arc(game.ball.x, game.ball.y, CONFIG.ballRadius, 0, Math.PI*2); ctx.fill();
             ctx.shadowBlur = 0;
 
-            // UI Overlays
             if (game.countdownActive) {
                 ctx.fillStyle = 'rgba(10, 10, 30, 0.7)'; ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowBlur = 60; ctx.shadowColor = '#00ccff';
                 ctx.font = 'bold 120px "Courier New"'; ctx.fillStyle = '#ffffff';
                 let text = game.countdown > 0 ? game.countdown.toString() : '¡YA!';
                 if (game.countdown === 0) { ctx.font = 'bold 80px "Courier New"'; ctx.fillStyle = '#00ff88'; }
-                ctx.fillText(text, CONFIG.width/2, CONFIG.height/2 - 10);
-                ctx.shadowBlur = 0;
-            }
-
-            if (game.paused && !game.countdownActive && !game.winner) {
-                ctx.fillStyle = 'rgba(10, 10, 30, 0.6)'; ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
-                ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.font = 'bold 40px "Courier New"';
-                ctx.fillText('PAUSA', CONFIG.width/2, CONFIG.height/2);
+                ctx.fillText(text, CONFIG.width/2, CONFIG.height/2 - 10); ctx.shadowBlur = 0;
             }
 
             if (game.winner) {
                 ctx.shadowBlur = 40; ctx.shadowColor = '#00ccff'; ctx.textAlign = 'center';
                 ctx.font = 'bold 40px "Courier New"'; ctx.fillStyle = '#ffffff';
-                const msg = game.winner === 'player1' ? '🏆 JUGADOR 1 GANA' : (game.vsCPU ? '🏆 CPU GANA' : '🏆 JUGADOR 2 GANA');
+                const msg = game.winner === 'player1' ? '🏆 J1 GANA' : (game.vsCPU ? '🏆 CPU GANA' : '🏆 J2 GANA');
                 ctx.fillText(msg, CONFIG.width/2, CONFIG.height/2 - 20);
                 ctx.shadowBlur = 0; ctx.font = '18px "Courier New"'; ctx.fillStyle = '#aaa';
-                ctx.fillText('Presiona "Reiniciar" para jugar de nuevo', CONFIG.width/2, CONFIG.height/2 + 40);
+                ctx.fillText('Presiona "Reiniciar"', CONFIG.width/2, CONFIG.height/2 + 40);
             }
             ctx.restore();
         }
@@ -406,8 +347,7 @@
                 if (game.countdownTimer-- <= 0) {
                     game.countdown--; game.countdownTimer = 60;
                     if (game.countdown < 0) {
-                        game.countdownActive = false; game.running = true; game.countdown = 3;
-                        resumeAfterPoint();
+                        game.countdownActive = false; game.running = true; game.countdown = 3; resumeAfterPoint();
                     }
                 }
                 return;
@@ -416,22 +356,14 @@
             if (!game.running || game.winner || !game.started || game.paused) return;
 
             const p1 = game.paddle1, p2 = game.paddle2, ball = game.ball;
-
-            // Guardar rastro de pelota
             game.ballTrail.push({x: ball.x, y: ball.y});
-            if (game.ballTrail.length > 8) game.ballTrail.shift(); // Longitud de la estela
+            if (game.ballTrail.length > 8) game.ballTrail.shift();
 
-            // Movimiento
-            p1.y += p1.dy;
-            p1.y = Math.max(0, Math.min(CONFIG.height - CONFIG.paddleHeight, p1.y));
-            
+            // Lógica de inercia y límites
+            p1.y += p1.dy; p1.y = Math.max(0, Math.min(CONFIG.height - CONFIG.paddleHeight, p1.y));
             if (game.vsCPU) {
-                if (ball.dx > 0) {
-                    const targetY = ball.y - CONFIG.paddleHeight/2;
-                    p2.y += (targetY - p2.y) * 0.09;
-                } else {
-                    p2.y += ((CONFIG.height/2 - CONFIG.paddleHeight/2) - p2.y) * 0.02;
-                }
+                if (ball.dx > 0) p2.y += ((ball.y - CONFIG.paddleHeight/2) - p2.y) * 0.09;
+                else p2.y += ((CONFIG.height/2 - CONFIG.paddleHeight/2) - p2.y) * 0.02;
             } else {
                 p2.y += p2.dy;
             }
@@ -440,9 +372,8 @@
             ball.x += ball.dx; ball.y += ball.dy;
 
             for(let i = particles.length - 1; i >= 0; i--) {
-                let p = particles[i];
-                p.x += p.vx; p.y += p.vy; p.life -= 0.05;
-                if(p.life <= 0) particles.splice(i, 1);
+                particles[i].x += particles[i].vx; particles[i].y += particles[i].vy; particles[i].life -= 0.05;
+                if(particles[i].life <= 0) particles.splice(i, 1);
             }
 
             if (ball.y - CONFIG.ballRadius < 0 || ball.y + CONFIG.ballRadius > CONFIG.height) {
@@ -451,119 +382,89 @@
                 playSound('hit');
             }
 
-            if (ball.dx < 0 && ball.x - CONFIG.ballRadius < p1.x + CONFIG.paddleWidth &&
-                ball.x + CONFIG.ballRadius > p1.x && ball.y > p1.y && ball.y < p1.y + CONFIG.paddleHeight) {
-                
+            if (ball.dx < 0 && ball.x - CONFIG.ballRadius < p1.x + CONFIG.paddleWidth && ball.x + CONFIG.ballRadius > p1.x && ball.y > p1.y && ball.y < p1.y + CONFIG.paddleHeight) {
                 playSound('hit'); spawnParticles(ball.x, ball.y, 1, '#4fc3f7');
                 const hitPos = (ball.y - (p1.y + CONFIG.paddleHeight/2)) / (CONFIG.paddleHeight/2);
-                const angle = hitPos * Math.PI / 3.5;
-                
                 ball.speed = Math.min(ball.speed + CONFIG.speedIncrement, CONFIG.maxSpeed);
-                ball.dx = Math.cos(angle) * ball.speed;
-                ball.dy = (Math.sin(angle) * ball.speed) + (p1.dy * 0.25);
+                ball.dx = Math.cos(hitPos * Math.PI / 3.5) * ball.speed;
+                ball.dy = (Math.sin(hitPos * Math.PI / 3.5) * ball.speed) + (p1.dy * 0.25);
                 if (ball.dx < 0) ball.dx = -ball.dx;
                 ball.x = p1.x + CONFIG.paddleWidth + CONFIG.ballRadius + 1;
             }
 
-            if (ball.dx > 0 && ball.x + CONFIG.ballRadius > p2.x &&
-                ball.x - CONFIG.ballRadius < p2.x + CONFIG.paddleWidth &&
-                ball.y > p2.y && ball.y < p2.y + CONFIG.paddleHeight) {
-                
+            if (ball.dx > 0 && ball.x + CONFIG.ballRadius > p2.x && ball.x - CONFIG.ballRadius < p2.x + CONFIG.paddleWidth && ball.y > p2.y && ball.y < p2.y + CONFIG.paddleHeight) {
                 playSound('hit'); spawnParticles(ball.x, ball.y, -1, '#ff8a80');
                 const hitPos = (ball.y - (p2.y + CONFIG.paddleHeight/2)) / (CONFIG.paddleHeight/2);
-                const angle = hitPos * Math.PI / 3.5;
-                
                 ball.speed = Math.min(ball.speed + CONFIG.speedIncrement, CONFIG.maxSpeed);
-                ball.dx = -Math.cos(angle) * ball.speed;
-                ball.dy = (Math.sin(angle) * ball.speed) + (p2.dy * 0.25);
+                ball.dx = -Math.cos(hitPos * Math.PI / 3.5) * ball.speed;
+                ball.dy = (Math.sin(hitPos * Math.PI / 3.5) * ball.speed) + (p2.dy * 0.25);
                 if (ball.dx > 0) ball.dx = -ball.dx;
                 ball.x = p2.x - CONFIG.ballRadius - 1;
             }
 
             if (ball.x - CONFIG.ballRadius < -20 || ball.x + CONFIG.ballRadius > CONFIG.width + 20) {
-                playSound('score');
-                game.shakeTimer = 15; 
-                
+                playSound('score'); game.shakeTimer = 15; 
                 if (ball.x < 0) p2.score++; else p1.score++;
                 updateScoreDisplay();
-
                 if (p1.score >= CONFIG.winningScore || p2.score >= CONFIG.winningScore) {
                     game.winner = p1.score >= CONFIG.winningScore ? 'player1' : 'player2';
                     game.running = false;
-                    
                     if (game.winner === 'player1') stats.j1++; else stats.j2++;
-                    localStorage.setItem('tennisStats', JSON.stringify(stats));
-                    updateStatsDisplay();
-                } else {
-                    resumeAfterPoint();
-                }
+                    localStorage.setItem('tennisStats', JSON.stringify(stats)); updateStatsDisplay();
+                } else resumeAfterPoint();
             }
         }
 
         function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
 
-        const keys = { w: false, s: false, arrowup: false, arrowdown: false };
-
-        function handleKeyDown(e) {
-            const key = e.key.toLowerCase();
-            if (['w','s','arrowup','arrowdown',' ','enter','p','escape'].includes(key)) e.preventDefault();
-            if ((key === 'p' || key === 'escape') && game.started && !game.winner && !game.countdownActive) {
-                game.paused = !game.paused; return;
-            }
-            if ((key === ' ' || key === 'enter') && !game.started) { startGame(); return; }
-            if (!game.running || !game.started || game.winner || game.paused) return;
-
-            if (key === 'w') { keys.w = true; game.paddle1.dy = -6.5; }
-            if (key === 's') { keys.s = true; game.paddle1.dy = 6.5; }
-            if (!game.vsCPU) {
-                if (key === 'arrowup') { keys.arrowup = true; game.paddle2.dy = -6.5; }
-                if (key === 'arrowdown') { keys.arrowdown = true; game.paddle2.dy = 6.5; }
-            }
-        }
-
-        function handleKeyUp(e) {
-            const key = e.key.toLowerCase();
-            if (key === 'w' || key === 's') {
-                if (key === 'w') keys.w = false; if (key === 's') keys.s = false;
-                if (!keys.w && !keys.s) game.paddle1.dy = 0;
-                else if (keys.w) game.paddle1.dy = -6.5; else if (keys.s) game.paddle1.dy = 6.5;
-            }
-            if (!game.vsCPU && (key === 'arrowup' || key === 'arrowdown')) {
-                if (key === 'arrowup') keys.arrowup = false; if (key === 'arrowdown') keys.arrowdown = false;
-                if (!keys.arrowup && !keys.arrowdown) game.paddle2.dy = 0;
-                else if (keys.arrowup) game.paddle2.dy = -6.5; else if (keys.arrowdown) game.paddle2.dy = 6.5;
-            }
-        }
-
-        canvas.addEventListener('touchmove', function(e) {
-            e.preventDefault(); 
+        // --- SISTEMA MULTITOUCH AVANZADO ---
+        function handleTouches(e) {
+            if (e.type !== 'touchend') e.preventDefault(); // Evita scroll
             if (!game.running || game.paused) return;
+            
             const rect = canvas.getBoundingClientRect();
-            const scaleY = canvas.height / rect.height, scaleX = canvas.width / rect.width;
+            const scaleY = CONFIG.height / rect.height;
+            const scaleX = CONFIG.width / rect.width;
+
+            // Reiniciamos inercia táctil
+            let touchingP1 = false, touchingP2 = false;
 
             for(let i=0; i < e.touches.length; i++) {
                 const t = e.touches[i];
-                const x = (t.clientX - rect.left) * scaleX, y = (t.clientY - rect.top) * scaleY;
+                const x = (t.clientX - rect.left) * scaleX;
+                const targetY = (t.clientY - rect.top) * scaleY - (CONFIG.paddleHeight/2);
                 
-                if (x < CONFIG.width / 2) { game.paddle1.y = y - CONFIG.paddleHeight/2; }
-                else if (!game.vsCPU && x >= CONFIG.width / 2) { game.paddle2.y = y - CONFIG.paddleHeight/2; }
+                if (x < CONFIG.width / 2) {
+                    touchingP1 = true;
+                    // Calcula inercia (dy) basándose en la distancia movida
+                    game.paddle1.dy = Math.max(-10, Math.min(10, targetY - game.paddle1.y));
+                    game.paddle1.y = targetY;
+                } else if (!game.vsCPU && x >= CONFIG.width / 2) {
+                    touchingP2 = true;
+                    game.paddle2.dy = Math.max(-10, Math.min(10, targetY - game.paddle2.y));
+                    game.paddle2.y = targetY;
+                }
             }
+            
+            // Si levantan el dedo, quitamos inercia
+            if (!touchingP1) game.paddle1.dy = 0;
+            if (!touchingP2 && !game.vsCPU) game.paddle2.dy = 0;
+        }
+
+        canvas.addEventListener('touchstart', handleTouches, { passive: false });
+        canvas.addEventListener('touchmove', handleTouches, { passive: false });
+        canvas.addEventListener('touchend', handleTouches, { passive: false });
+        
+        // Mantener clics para menú inicial en PC/Móvil
+        canvas.addEventListener('click', handleCanvasClick);
+        canvas.addEventListener('touchstart', (e) => {
+            if (!game.started) handleCanvasClick(e);
         }, { passive: false });
 
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
-        canvas.addEventListener('click', handleCanvasClick);
         resetBtn.addEventListener('click', () => { resetGame(); updateResetButton(); });
 
         resetPositions(); updateScoreDisplay(); gameLoop();
         
-        function resizeCanvas() {
-            const maxWidth = canvas.parentElement.clientWidth;
-            if (maxWidth < 800) { canvas.style.width = maxWidth - 30 + 'px'; canvas.style.height = 'auto'; }
-            else { canvas.style.width = '800px'; canvas.style.height = 'auto'; }
-        }
-        window.addEventListener('resize', resizeCanvas); resizeCanvas();
-
         if (!CanvasRenderingContext2D.prototype.roundRect) {
             CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r=0) {
                 this.moveTo(x+r, y); this.arcTo(x+w, y, x+w, y+h, r); this.arcTo(x+w, y+h, x, y+h, r);
