@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎾 Tennis for Two - Mobile Optimized</title>
+    <title>🎾 Tennis for Two - PC & Mobile Crossplay</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -36,11 +36,7 @@
             background-color: #0f1a2f; background-size: cover; background-position: center;
             box-shadow: inset 0 0 50px rgba(0,0,0,0.7);
             
-            /* CORRECCIÓN DE PANTALLA CORTADA */
-            width: auto; 
-            max-width: 100%; 
-            max-height: 65vh; /* Evita que crezca más que el 65% de la altura de la pantalla */
-            aspect-ratio: 2 / 1; /* Mantiene la proporción perfecta 800x400 */
+            width: auto; max-width: 100%; max-height: 65vh; aspect-ratio: 2 / 1;
             
             cursor: default; touch-action: none; transition: background-image 0.3s ease-in-out;
             -webkit-tap-highlight-color: transparent;
@@ -51,6 +47,11 @@
             margin-top: 15px; padding: 10px 18px; background: #0f0f2a;
             border-radius: 50px; border: 1px solid #00ccff44; flex-wrap: wrap; gap: 10px;
         }
+        .controls div { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .key {
+            background: #1a1a3e; padding: 4px 10px; border-radius: 30px;
+            border: 1px solid #00ccff66; color: #00ccff; font-weight: bold; font-size: 0.75rem;
+        }
         .score { font-size: 1.6rem; font-weight: bold; color: #fff; text-shadow: 0 0 20px #00ccff; letter-spacing: 3px; }
         .btn {
             background: #00ccff; border: none; color: #0a0a1a; padding: 8px 20px;
@@ -60,7 +61,6 @@
         .btn-hidden { visibility: hidden; pointer-events: none; }
         .stats { position: absolute; top: -25px; left: 15px; font-size: 0.8rem; color: #6699bb; }
         
-        /* Ajustes agresivos para móviles en horizontal */
         @media (max-height: 500px) {
             .game-container { padding: 5px; border-radius: 10px; }
             .settings-bar, .controls { padding: 4px 10px; margin: 4px 0; border-radius: 8px; }
@@ -90,10 +90,16 @@
     <canvas id="gameCanvas" width="800" height="400"></canvas>
     
     <div class="controls">
-        <div style="color:#aaa; font-size: 0.8rem;">J1: Izquierda</div>
+        <div>
+            <span class="key">W / S</span>
+            <span style="color:#aaa; font-size: 0.8rem;">J1 (Toque Izq)</span>
+        </div>
         <div class="score" id="scoreDisplay">0 - 0</div>
         <button class="btn" id="resetBtn">⟳ Reiniciar</button>
-        <div style="color:#aaa; font-size: 0.8rem;">J2: Derecha</div>
+        <div>
+            <span style="color:#aaa; font-size: 0.8rem;">J2 (Toque Der)</span>
+            <span class="key">⬆ / ⬇</span>
+        </div>
     </div>
 </div>
 
@@ -108,25 +114,16 @@
         const musicToggle = document.getElementById('musicToggle');
         const fullscreenBtn = document.getElementById('fullscreenBtn');
 
-        // --- CORRECCIÓN FULLSCREEN (Soporte multiplataforma) ---
         fullscreenBtn.addEventListener('click', () => {
             const elem = document.documentElement;
             if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen().catch(err => console.log(err));
-                } else if (elem.webkitRequestFullscreen) { /* Safari / Chrome antiguo */
-                    elem.webkitRequestFullscreen();
-                } else if (elem.msRequestFullscreen) { /* IE11 / Edge antiguo */
-                    elem.msRequestFullscreen();
-                }
+                if (elem.requestFullscreen) elem.requestFullscreen().catch(e => console.log(e));
+                else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+                else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                else if (document.msExitFullscreen) document.msExitFullscreen();
             }
         });
 
@@ -188,14 +185,9 @@
             }
         }
 
-        // --- CORRECCIÓN VELOCIDAD (Juego más rápido) ---
         const CONFIG = {
             width: 800, height: 400, paddleWidth: 12, paddleHeight: 70,
-            ballRadius: 8, 
-            ballSpeed: 7.0,      // Antes 4.5
-            maxSpeed: 15.0,      // Antes 10.5
-            speedIncrement: 0.5, // Antes 0.3
-            winningScore: 7
+            ballRadius: 8, ballSpeed: 7.0, maxSpeed: 15.0, speedIncrement: 0.5, winningScore: 7
         };
 
         let stats = { j1: 0, j2: 0 };
@@ -203,14 +195,19 @@
         function updateStatsDisplay() { statsDisplay.textContent = `Victorias - J1: ${stats.j1} | J2/IA: ${stats.j2}`; }
         updateStatsDisplay();
 
+        // --- SISTEMA HÍBRIDO PC/MÓVIL ---
+        // Rastreamos si el jugador está tocando la pantalla para anular el teclado solo en ese momento
         let game = {
             paddle1: { x: 20, y: 0, dy: 0, score: 0 },
             paddle2: { x: 0, y: 0, dy: 0, score: 0 },
             ball: { x: 0, y: 0, dx: 0, dy: 0, speed: CONFIG.ballSpeed },
             ballTrail: [], running: false, winner: null, started: false, showReset: false,
             countdown: 3, countdownActive: false, countdownTimer: 0, firstStart: true,
-            paused: false, vsCPU: false, shakeTimer: 0, celebrateTimer: 0 
+            paused: false, vsCPU: false, shakeTimer: 0, celebrateTimer: 0,
+            touchingP1: false, touchingP2: false // Banderas de control táctil
         };
+
+        const keys = { w: false, s: false, arrowup: false, arrowdown: false };
 
         let spectators = [];
         const specColors = ['#00ccff', '#ff8a80', '#ffffff', '#ffee00', '#aa00ff'];
@@ -218,8 +215,7 @@
             spectators.push({
                 x: 40 + Math.random() * (CONFIG.width - 80),
                 y: Math.random() > 0.5 ? 5 + Math.random()*15 : CONFIG.height - 20 + Math.random()*15,
-                color: specColors[Math.floor(Math.random() * specColors.length)],
-                offset: Math.random() * Math.PI * 2 
+                color: specColors[Math.floor(Math.random() * specColors.length)], offset: Math.random() * Math.PI * 2 
             });
         }
 
@@ -285,7 +281,7 @@
             ctx.fillText('🎾 TENNIS FOR TWO', CONFIG.width/2, CONFIG.height/2 - 90);
 
             ctx.shadowBlur = 15; ctx.font = '18px "Courier New", monospace'; ctx.fillStyle = '#88ddff';
-            ctx.fillText('Toque para iniciar', CONFIG.width/2, CONFIG.height/2 - 20);
+            ctx.fillText('Toque / Click o [Espacio] para iniciar', CONFIG.width/2, CONFIG.height/2 - 20);
 
             ctx.shadowBlur = 0;
             const modeBtnY = CONFIG.height/2 + 30;
@@ -325,9 +321,8 @@
                     const direction = s.y < CONFIG.height/2 ? 1 : -1;
                     jumpY = (Math.random() * 15) * direction; 
                     if (Math.random() > 0.85) drawColor = '#ffffff'; 
-                } else {
-                    jumpY = Math.sin((Date.now() / 400) + s.offset) * 3;
-                }
+                } else jumpY = Math.sin((Date.now() / 400) + s.offset) * 3;
+                
                 ctx.fillStyle = drawColor; ctx.globalAlpha = 0.5 + Math.random() * 0.5;
                 ctx.beginPath(); ctx.arc(s.x, s.y + jumpY, 2, 0, Math.PI*2); ctx.fill();
             });
@@ -401,11 +396,24 @@
             game.ballTrail.push({x: ball.x, y: ball.y});
             if (game.ballTrail.length > 8) game.ballTrail.shift();
 
-            p1.y += p1.dy; p1.y = Math.max(0, Math.min(CONFIG.height - CONFIG.paddleHeight, p1.y));
+            // --- LÓGICA DE MOVIMIENTO HÍBRIDA (Teclado + Touch) ---
+            if (!game.touchingP1) {
+                if (keys.w) p1.dy = -7; else if (keys.s) p1.dy = 7; else p1.dy = 0;
+                p1.y += p1.dy;
+            }
+            p1.y = Math.max(0, Math.min(CONFIG.height - CONFIG.paddleHeight, p1.y));
+
             if (game.vsCPU) {
+                const oldY = p2.y;
                 if (ball.dx > 0) p2.y += ((ball.y - CONFIG.paddleHeight/2) - p2.y) * 0.09;
                 else p2.y += ((CONFIG.height/2 - CONFIG.paddleHeight/2) - p2.y) * 0.02;
-            } else p2.y += p2.dy;
+                p2.dy = p2.y - oldY; // IA spin effect
+            } else {
+                if (!game.touchingP2) {
+                    if (keys.arrowup) p2.dy = -7; else if (keys.arrowdown) p2.dy = 7; else p2.dy = 0;
+                    p2.y += p2.dy;
+                }
+            }
             p2.y = Math.max(0, Math.min(CONFIG.height - CONFIG.paddleHeight, p2.y));
 
             ball.x += ball.dx; ball.y += ball.dy;
@@ -453,22 +461,42 @@
 
         function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
 
+        // --- MANEJADORES DE TECLADO REINTEGRADOS ---
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (['w','s','arrowup','arrowdown',' ','enter','p','escape'].includes(key)) e.preventDefault();
+            if ((key === 'p' || key === 'escape') && game.started && !game.winner && !game.countdownActive) {
+                game.paused = !game.paused; return;
+            }
+            if ((key === ' ' || key === 'enter') && !game.started) { startGame(); return; }
+            if (keys.hasOwnProperty(key)) keys[key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (keys.hasOwnProperty(key)) keys[key] = false;
+        });
+
+        // --- MANEJADORES TÁCTILES ---
         function handleTouches(e) {
             if (e.type !== 'touchend') e.preventDefault(); 
             if (!game.running || game.paused) return;
             const rect = canvas.getBoundingClientRect();
             const scaleY = CONFIG.height / rect.height, scaleX = CONFIG.width / rect.width;
-            let touchingP1 = false, touchingP2 = false;
+            
+            game.touchingP1 = false; 
+            game.touchingP2 = false;
 
             for(let i=0; i < e.touches.length; i++) {
                 const t = e.touches[i], x = (t.clientX - rect.left) * scaleX, targetY = (t.clientY - rect.top) * scaleY - (CONFIG.paddleHeight/2);
                 if (x < CONFIG.width / 2) {
-                    touchingP1 = true; game.paddle1.dy = Math.max(-10, Math.min(10, targetY - game.paddle1.y)); game.paddle1.y = targetY;
+                    game.touchingP1 = true; game.paddle1.dy = Math.max(-10, Math.min(10, targetY - game.paddle1.y)); game.paddle1.y = targetY;
                 } else if (!game.vsCPU && x >= CONFIG.width / 2) {
-                    touchingP2 = true; game.paddle2.dy = Math.max(-10, Math.min(10, targetY - game.paddle2.y)); game.paddle2.y = targetY;
+                    game.touchingP2 = true; game.paddle2.dy = Math.max(-10, Math.min(10, targetY - game.paddle2.y)); game.paddle2.y = targetY;
                 }
             }
-            if (!touchingP1) game.paddle1.dy = 0; if (!touchingP2 && !game.vsCPU) game.paddle2.dy = 0;
+            if (!game.touchingP1) game.paddle1.dy = 0; 
+            if (!game.touchingP2 && !game.vsCPU) game.paddle2.dy = 0;
         }
 
         canvas.addEventListener('touchstart', handleTouches, { passive: false });
