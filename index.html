@@ -2,19 +2,15 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <!-- CRUCIAL PARA MÓVILES: Previene el zoom al tocar dos veces -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎾 Tennis for Two - Mobile Multiplayer</title>
+    <title>🎾 Tennis for Two - Mobile Optimized</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #0a0a1a;
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; font-family: 'Courier New', monospace; color: #fff;
-            overflow: hidden; 
-            /* Previene gestos de navegación y "gomas" en iOS/Android */
-            touch-action: none; 
-            overscroll-behavior: none;
+            overflow: hidden; touch-action: none; overscroll-behavior: none;
         }
         .game-container {
             background: #111128; padding: 15px; border-radius: 20px;
@@ -33,20 +29,21 @@
             padding: 5px 10px; border-radius: 5px; font-family: 'Courier New', monospace;
             cursor: pointer; outline: none; font-size: 0.9rem;
         }
-        .checkbox-label {
-            display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #88ddff; cursor: pointer;
-        }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #88ddff; cursor: pointer; }
 
         canvas {
             display: block; margin: 0 auto; border-radius: 12px;
             background-color: #0f1a2f; background-size: cover; background-position: center;
             box-shadow: inset 0 0 50px rgba(0,0,0,0.7);
-            width: 100%; max-width: 800px; /* Adaptable a pantallas pequeñas */
-            aspect-ratio: 2/1; /* Mantiene la proporción 800x400 */
-            cursor: default;
-            touch-action: none;
-            transition: background-image 0.3s ease-in-out;
-            -webkit-tap-highlight-color: transparent; /* Quita el destello azul al tocar en móviles */
+            
+            /* CORRECCIÓN DE PANTALLA CORTADA */
+            width: auto; 
+            max-width: 100%; 
+            max-height: 65vh; /* Evita que crezca más que el 65% de la altura de la pantalla */
+            aspect-ratio: 2 / 1; /* Mantiene la proporción perfecta 800x400 */
+            
+            cursor: default; touch-action: none; transition: background-image 0.3s ease-in-out;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .controls {
@@ -63,11 +60,12 @@
         .btn-hidden { visibility: hidden; pointer-events: none; }
         .stats { position: absolute; top: -25px; left: 15px; font-size: 0.8rem; color: #6699bb; }
         
-        /* Ajustes para móviles en horizontal */
+        /* Ajustes agresivos para móviles en horizontal */
         @media (max-height: 500px) {
-            .game-container { padding: 5px; }
-            .settings-bar, .controls { padding: 5px; margin: 5px 0; }
-            .stats { display: none; } /* Oculta stats para ganar espacio */
+            .game-container { padding: 5px; border-radius: 10px; }
+            .settings-bar, .controls { padding: 4px 10px; margin: 4px 0; border-radius: 8px; }
+            canvas { max-height: 60vh; }
+            .stats { display: none; }
         }
     </style>
 </head>
@@ -92,10 +90,10 @@
     <canvas id="gameCanvas" width="800" height="400"></canvas>
     
     <div class="controls">
-        <div style="color:#aaa; font-size: 0.8rem;">J1: Mitad Izquierda</div>
+        <div style="color:#aaa; font-size: 0.8rem;">J1: Izquierda</div>
         <div class="score" id="scoreDisplay">0 - 0</div>
         <button class="btn" id="resetBtn">⟳ Reiniciar</button>
-        <div style="color:#aaa; font-size: 0.8rem;">J2: Mitad Derecha</div>
+        <div style="color:#aaa; font-size: 0.8rem;">J2: Derecha</div>
     </div>
 </div>
 
@@ -110,34 +108,65 @@
         const musicToggle = document.getElementById('musicToggle');
         const fullscreenBtn = document.getElementById('fullscreenBtn');
 
-        // Pantalla Completa para mejor experiencia móvil
+        // --- CORRECCIÓN FULLSCREEN (Soporte multiplataforma) ---
         fullscreenBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            const elem = document.documentElement;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => console.log(err));
+                } else if (elem.webkitRequestFullscreen) { /* Safari / Chrome antiguo */
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) { /* IE11 / Edge antiguo */
+                    elem.msRequestFullscreen();
+                }
             } else {
-                document.exitFullscreen();
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
             }
         });
 
-        // Música
         const bgMusic = new Audio('electricsoundtrack.mp3');
-        bgMusic.loop = true;
-        bgMusic.volume = 0.5;
+        bgMusic.loop = true; bgMusic.volume = 0.5;
 
         musicToggle.addEventListener('change', (e) => {
             if (e.target.checked && game.started) bgMusic.play().catch(e=>console.log(e));
             else bgMusic.pause();
         });
 
-        function updateBackground() {
-            canvas.style.backgroundImage = stageSelect.value === 'none' ? 'none' : `url('${stageSelect.value}')`;
-        }
-        stageSelect.addEventListener('change', updateBackground);
-        updateBackground();
+        function updateBackground() { canvas.style.backgroundImage = stageSelect.value === 'none' ? 'none' : `url('${stageSelect.value}')`; }
+        stageSelect.addEventListener('change', updateBackground); updateBackground();
 
         let audioCtx;
         function playSound(type) {
             if (!audioCtx) return;
+            
+            if (type === 'cheer') {
+                const bufferSize = audioCtx.sampleRate * 1.5; 
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass'; filter.frequency.value = 600;
+                
+                const gain = audioCtx.createGain();
+                noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+                
+                gain.gain.setValueAtTime(0, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.7, audioCtx.currentTime + 0.3);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+                
+                noise.start(); return; 
+            }
+
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
@@ -159,11 +188,14 @@
             }
         }
 
+        // --- CORRECCIÓN VELOCIDAD (Juego más rápido) ---
         const CONFIG = {
-            width: 800, height: 400,
-            paddleWidth: 12, paddleHeight: 70,
-            ballRadius: 8, ballSpeed: 4.5, maxSpeed: 10.5,
-            speedIncrement: 0.3, winningScore: 7
+            width: 800, height: 400, paddleWidth: 12, paddleHeight: 70,
+            ballRadius: 8, 
+            ballSpeed: 7.0,      // Antes 4.5
+            maxSpeed: 15.0,      // Antes 10.5
+            speedIncrement: 0.5, // Antes 0.3
+            winningScore: 7
         };
 
         let stats = { j1: 0, j2: 0 };
@@ -177,8 +209,19 @@
             ball: { x: 0, y: 0, dx: 0, dy: 0, speed: CONFIG.ballSpeed },
             ballTrail: [], running: false, winner: null, started: false, showReset: false,
             countdown: 3, countdownActive: false, countdownTimer: 0, firstStart: true,
-            paused: false, vsCPU: false, shakeTimer: 0
+            paused: false, vsCPU: false, shakeTimer: 0, celebrateTimer: 0 
         };
+
+        let spectators = [];
+        const specColors = ['#00ccff', '#ff8a80', '#ffffff', '#ffee00', '#aa00ff'];
+        for(let i=0; i<120; i++) {
+            spectators.push({
+                x: 40 + Math.random() * (CONFIG.width - 80),
+                y: Math.random() > 0.5 ? 5 + Math.random()*15 : CONFIG.height - 20 + Math.random()*15,
+                color: specColors[Math.floor(Math.random() * specColors.length)],
+                offset: Math.random() * Math.PI * 2 
+            });
+        }
 
         let particles = [];
         function spawnParticles(x, y, dxDirection, baseColor) {
@@ -246,11 +289,10 @@
 
             ctx.shadowBlur = 0;
             const modeBtnY = CONFIG.height/2 + 30;
-            ctx.fillStyle = game.vsCPU ? '#ff8a80' : '#1a1a3e';
-            ctx.strokeStyle = game.vsCPU ? '#ff8a80' : '#00ccff66';
+            ctx.fillStyle = game.vsCPU ? '#ff8a80' : '#1a1a3e'; ctx.strokeStyle = game.vsCPU ? '#ff8a80' : '#00ccff66';
             ctx.beginPath(); ctx.roundRect(CONFIG.width/2 - 100, modeBtnY, 200, 40, 20); ctx.fill(); ctx.stroke();
             ctx.fillStyle = game.vsCPU ? '#111' : '#00ccff'; ctx.font = 'bold 16px "Courier New"';
-            ctx.fillText(game.vsCPU ? '🤖 VS CPU' : '👥 2 JUGADORES (Toque lados)', CONFIG.width/2, modeBtnY + 20);
+            ctx.fillText(game.vsCPU ? '🤖 VS CPU' : '👥 2 JUGADORES', CONFIG.width/2, modeBtnY + 20);
 
             const btnX = CONFIG.width/2 - 80, btnY = CONFIG.height/2 + 100;
             ctx.shadowBlur = 30; ctx.shadowColor = '#00ccff'; ctx.fillStyle = '#00ccff';
@@ -263,33 +305,34 @@
             if (game.started) return;
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
-            // Para toques (móvil) o clicks (PC)
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
             const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            
             if(!clientX) return;
-            
-            const mouseX = (clientX - rect.left) * scaleX;
-            const mouseY = (clientY - rect.top) * scaleY;
+            const mouseX = (clientX - rect.left) * scaleX, mouseY = (clientY - rect.top) * scaleY;
 
-            if (mouseX >= CONFIG.width/2 - 80 && mouseX <= CONFIG.width/2 + 80 &&
-                mouseY >= CONFIG.height/2 + 100 && mouseY <= CONFIG.height/2 + 150) {
-                startGame();
-            }
-            if (mouseX >= CONFIG.width/2 - 100 && mouseX <= CONFIG.width/2 + 100 &&
-                mouseY >= CONFIG.height/2 + 30 && mouseY <= CONFIG.height/2 + 70) {
-                game.vsCPU = !game.vsCPU;
-            }
+            if (mouseX >= CONFIG.width/2 - 80 && mouseX <= CONFIG.width/2 + 80 && mouseY >= CONFIG.height/2 + 100 && mouseY <= CONFIG.height/2 + 150) startGame();
+            if (mouseX >= CONFIG.width/2 - 100 && mouseX <= CONFIG.width/2 + 100 && mouseY >= CONFIG.height/2 + 30 && mouseY <= CONFIG.height/2 + 70) game.vsCPU = !game.vsCPU;
         }
 
         function draw() {
             ctx.save();
-            if (game.shakeTimer > 0) {
-                ctx.translate((Math.random() - 0.5) * 12, (Math.random() - 0.5) * 12);
-                game.shakeTimer--;
-            }
-
+            if (game.shakeTimer > 0) { ctx.translate((Math.random() - 0.5) * 12, (Math.random() - 0.5) * 12); game.shakeTimer--; }
             ctx.clearRect(0, 0, CONFIG.width, CONFIG.height);
+            
+            spectators.forEach((s) => {
+                let jumpY = 0; let drawColor = s.color;
+                if (game.celebrateTimer > 0) {
+                    const direction = s.y < CONFIG.height/2 ? 1 : -1;
+                    jumpY = (Math.random() * 15) * direction; 
+                    if (Math.random() > 0.85) drawColor = '#ffffff'; 
+                } else {
+                    jumpY = Math.sin((Date.now() / 400) + s.offset) * 3;
+                }
+                ctx.fillStyle = drawColor; ctx.globalAlpha = 0.5 + Math.random() * 0.5;
+                ctx.beginPath(); ctx.arc(s.x, s.y + jumpY, 2, 0, Math.PI*2); ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+
             ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 2; ctx.setLineDash([8, 12]);
             ctx.beginPath(); ctx.moveTo(CONFIG.width/2, 0); ctx.lineTo(CONFIG.width/2, CONFIG.height); ctx.stroke();
             ctx.setLineDash([]); ctx.beginPath(); ctx.arc(CONFIG.width/2, CONFIG.height/2, 60, 0, Math.PI*2); ctx.stroke();
@@ -346,27 +389,23 @@
             if (game.countdownActive) {
                 if (game.countdownTimer-- <= 0) {
                     game.countdown--; game.countdownTimer = 60;
-                    if (game.countdown < 0) {
-                        game.countdownActive = false; game.running = true; game.countdown = 3; resumeAfterPoint();
-                    }
+                    if (game.countdown < 0) { game.countdownActive = false; game.running = true; game.countdown = 3; resumeAfterPoint(); }
                 }
                 return;
             }
 
+            if (game.celebrateTimer > 0) game.celebrateTimer--;
             if (!game.running || game.winner || !game.started || game.paused) return;
 
             const p1 = game.paddle1, p2 = game.paddle2, ball = game.ball;
             game.ballTrail.push({x: ball.x, y: ball.y});
             if (game.ballTrail.length > 8) game.ballTrail.shift();
 
-            // Lógica de inercia y límites
             p1.y += p1.dy; p1.y = Math.max(0, Math.min(CONFIG.height - CONFIG.paddleHeight, p1.y));
             if (game.vsCPU) {
                 if (ball.dx > 0) p2.y += ((ball.y - CONFIG.paddleHeight/2) - p2.y) * 0.09;
                 else p2.y += ((CONFIG.height/2 - CONFIG.paddleHeight/2) - p2.y) * 0.02;
-            } else {
-                p2.y += p2.dy;
-            }
+            } else p2.y += p2.dy;
             p2.y = Math.max(0, Math.min(CONFIG.height - CONFIG.paddleHeight, p2.y));
 
             ball.x += ball.dx; ball.y += ball.dy;
@@ -377,8 +416,7 @@
             }
 
             if (ball.y - CONFIG.ballRadius < 0 || ball.y + CONFIG.ballRadius > CONFIG.height) {
-                ball.dy = -ball.dy;
-                ball.y = ball.y - CONFIG.ballRadius < 0 ? CONFIG.ballRadius : CONFIG.height - CONFIG.ballRadius;
+                ball.dy = -ball.dy; ball.y = ball.y - CONFIG.ballRadius < 0 ? CONFIG.ballRadius : CONFIG.height - CONFIG.ballRadius;
                 playSound('hit');
             }
 
@@ -386,29 +424,27 @@
                 playSound('hit'); spawnParticles(ball.x, ball.y, 1, '#4fc3f7');
                 const hitPos = (ball.y - (p1.y + CONFIG.paddleHeight/2)) / (CONFIG.paddleHeight/2);
                 ball.speed = Math.min(ball.speed + CONFIG.speedIncrement, CONFIG.maxSpeed);
-                ball.dx = Math.cos(hitPos * Math.PI / 3.5) * ball.speed;
-                ball.dy = (Math.sin(hitPos * Math.PI / 3.5) * ball.speed) + (p1.dy * 0.25);
-                if (ball.dx < 0) ball.dx = -ball.dx;
-                ball.x = p1.x + CONFIG.paddleWidth + CONFIG.ballRadius + 1;
+                ball.dx = Math.cos(hitPos * Math.PI / 3.5) * ball.speed; ball.dy = (Math.sin(hitPos * Math.PI / 3.5) * ball.speed) + (p1.dy * 0.25);
+                if (ball.dx < 0) ball.dx = -ball.dx; ball.x = p1.x + CONFIG.paddleWidth + CONFIG.ballRadius + 1;
             }
 
             if (ball.dx > 0 && ball.x + CONFIG.ballRadius > p2.x && ball.x - CONFIG.ballRadius < p2.x + CONFIG.paddleWidth && ball.y > p2.y && ball.y < p2.y + CONFIG.paddleHeight) {
                 playSound('hit'); spawnParticles(ball.x, ball.y, -1, '#ff8a80');
                 const hitPos = (ball.y - (p2.y + CONFIG.paddleHeight/2)) / (CONFIG.paddleHeight/2);
                 ball.speed = Math.min(ball.speed + CONFIG.speedIncrement, CONFIG.maxSpeed);
-                ball.dx = -Math.cos(hitPos * Math.PI / 3.5) * ball.speed;
-                ball.dy = (Math.sin(hitPos * Math.PI / 3.5) * ball.speed) + (p2.dy * 0.25);
-                if (ball.dx > 0) ball.dx = -ball.dx;
-                ball.x = p2.x - CONFIG.ballRadius - 1;
+                ball.dx = -Math.cos(hitPos * Math.PI / 3.5) * ball.speed; ball.dy = (Math.sin(hitPos * Math.PI / 3.5) * ball.speed) + (p2.dy * 0.25);
+                if (ball.dx > 0) ball.dx = -ball.dx; ball.x = p2.x - CONFIG.ballRadius - 1;
             }
 
             if (ball.x - CONFIG.ballRadius < -20 || ball.x + CONFIG.ballRadius > CONFIG.width + 20) {
-                playSound('score'); game.shakeTimer = 15; 
+                playSound('score'); playSound('cheer'); 
+                game.shakeTimer = 15; game.celebrateTimer = 90; 
+                
                 if (ball.x < 0) p2.score++; else p1.score++;
                 updateScoreDisplay();
                 if (p1.score >= CONFIG.winningScore || p2.score >= CONFIG.winningScore) {
-                    game.winner = p1.score >= CONFIG.winningScore ? 'player1' : 'player2';
-                    game.running = false;
+                    game.winner = p1.score >= CONFIG.winningScore ? 'player1' : 'player2'; game.running = false;
+                    game.celebrateTimer = 200; 
                     if (game.winner === 'player1') stats.j1++; else stats.j2++;
                     localStorage.setItem('tennisStats', JSON.stringify(stats)); updateStatsDisplay();
                 } else resumeAfterPoint();
@@ -417,50 +453,29 @@
 
         function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
 
-        // --- SISTEMA MULTITOUCH AVANZADO ---
         function handleTouches(e) {
-            if (e.type !== 'touchend') e.preventDefault(); // Evita scroll
+            if (e.type !== 'touchend') e.preventDefault(); 
             if (!game.running || game.paused) return;
-            
             const rect = canvas.getBoundingClientRect();
-            const scaleY = CONFIG.height / rect.height;
-            const scaleX = CONFIG.width / rect.width;
-
-            // Reiniciamos inercia táctil
+            const scaleY = CONFIG.height / rect.height, scaleX = CONFIG.width / rect.width;
             let touchingP1 = false, touchingP2 = false;
 
             for(let i=0; i < e.touches.length; i++) {
-                const t = e.touches[i];
-                const x = (t.clientX - rect.left) * scaleX;
-                const targetY = (t.clientY - rect.top) * scaleY - (CONFIG.paddleHeight/2);
-                
+                const t = e.touches[i], x = (t.clientX - rect.left) * scaleX, targetY = (t.clientY - rect.top) * scaleY - (CONFIG.paddleHeight/2);
                 if (x < CONFIG.width / 2) {
-                    touchingP1 = true;
-                    // Calcula inercia (dy) basándose en la distancia movida
-                    game.paddle1.dy = Math.max(-10, Math.min(10, targetY - game.paddle1.y));
-                    game.paddle1.y = targetY;
+                    touchingP1 = true; game.paddle1.dy = Math.max(-10, Math.min(10, targetY - game.paddle1.y)); game.paddle1.y = targetY;
                 } else if (!game.vsCPU && x >= CONFIG.width / 2) {
-                    touchingP2 = true;
-                    game.paddle2.dy = Math.max(-10, Math.min(10, targetY - game.paddle2.y));
-                    game.paddle2.y = targetY;
+                    touchingP2 = true; game.paddle2.dy = Math.max(-10, Math.min(10, targetY - game.paddle2.y)); game.paddle2.y = targetY;
                 }
             }
-            
-            // Si levantan el dedo, quitamos inercia
-            if (!touchingP1) game.paddle1.dy = 0;
-            if (!touchingP2 && !game.vsCPU) game.paddle2.dy = 0;
+            if (!touchingP1) game.paddle1.dy = 0; if (!touchingP2 && !game.vsCPU) game.paddle2.dy = 0;
         }
 
         canvas.addEventListener('touchstart', handleTouches, { passive: false });
         canvas.addEventListener('touchmove', handleTouches, { passive: false });
         canvas.addEventListener('touchend', handleTouches, { passive: false });
-        
-        // Mantener clics para menú inicial en PC/Móvil
         canvas.addEventListener('click', handleCanvasClick);
-        canvas.addEventListener('touchstart', (e) => {
-            if (!game.started) handleCanvasClick(e);
-        }, { passive: false });
-
+        canvas.addEventListener('touchstart', (e) => { if (!game.started) handleCanvasClick(e); }, { passive: false });
         resetBtn.addEventListener('click', () => { resetGame(); updateResetButton(); });
 
         resetPositions(); updateScoreDisplay(); gameLoop();
