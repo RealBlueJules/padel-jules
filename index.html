@@ -1,1340 +1,533 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BLUE JULES - Juego de Plataformas</title>
-
-<style>
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-
-    body {
-        background: linear-gradient(135deg, #071b3a, #0b4f8a, #071b3a);
-        color: white;
-        font-family: Arial, sans-serif;
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    #game-container {
-        position: relative;
-        width: 800px;
-        max-width: 95vw;
-    }
-
-    canvas {
-        width: 100%;
-        height: auto;
-        display: block;
-        background: linear-gradient(#87ceeb, #dff6ff);
-        border: 4px solid #ffffff;
-        border-radius: 15px;
-        box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
-    }
-
-    #hud {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        right: 10px;
-        display: flex;
-        justify-content: space-between;
-        gap: 8px;
-        z-index: 5;
-        pointer-events: none;
-    }
-
-    .hud-box {
-        background: rgba(0, 0, 0, 0.65);
-        padding: 8px 12px;
-        border-radius: 10px;
-        font-weight: bold;
-        font-size: 14px;
-    }
-
-    .overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 15, 40, 0.92);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        z-index: 10;
-        border-radius: 12px;
-        padding: 25px;
-    }
-
-    .hidden {
-        display: none;
-    }
-
-    h1 {
-        font-size: 60px;
-        color: #ffffff;
-        text-shadow: 0 0 15px #38a8ff;
-        margin-bottom: 10px;
-    }
-
-    h2 {
-        font-size: 30px;
-        margin-bottom: 25px;
-    }
-
-    .subtitle {
-        font-size: 18px;
-        margin-bottom: 30px;
-        color: #bde5ff;
-    }
-
-    button {
-        border: none;
-        border-radius: 12px;
-        padding: 14px 28px;
-        margin: 8px;
-        font-size: 18px;
-        font-weight: bold;
-        cursor: pointer;
-        color: white;
-        background: linear-gradient(135deg, #0878d1, #13a1ff);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
-        transition: 0.2s;
-    }
-
-    button:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 20px rgba(70, 190, 255, 0.7);
-    }
-
-    .characters {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        flex-wrap: wrap;
-        margin-bottom: 20px;
-    }
-
-    .character {
-        width: 170px;
-        min-height: 180px;
-        background: rgba(255, 255, 255, 0.1);
-        border: 3px solid transparent;
-        border-radius: 18px;
-        padding: 15px;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-
-    .character:hover {
-        transform: translateY(-8px);
-        border-color: #35b5ff;
-        background: rgba(255, 255, 255, 0.17);
-    }
-
-    .character.selected {
-        border-color: #ffd43b;
-        background: rgba(255, 212, 59, 0.18);
-        box-shadow: 0 0 20px rgba(255, 212, 59, 0.5);
-    }
-
-    .character-icon {
-        font-size: 75px;
-        margin-bottom: 8px;
-    }
-
-    .character-name {
-        font-size: 20px;
-        font-weight: bold;
-    }
-
-    .controls {
-        margin-top: 15px;
-        color: #bde5ff;
-        font-size: 14px;
-        line-height: 1.7;
-    }
-
-    #message {
-        margin-top: 10px;
-        font-size: 18px;
-        color: #ffe66d;
-        min-height: 25px;
-    }
-
-    .game-over-title {
-        color: #ff5c5c;
-    }
-
-    .win-title {
-        color: #65ff91;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎾 Tennis for Two - Neon Ultimate</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; font-family: 'Courier New', monospace; color: #fff;
+            overflow: hidden; /* Previene scroll en móviles al tocar */
+        }
+        .game-container {
+            background: #111128; padding: 25px; border-radius: 20px;
+            box-shadow: 0 0 60px rgba(0, 200, 255, 0.1);
+            border: 1px solid #00ccff44; text-align: center; position: relative;
+        }
+        canvas {
+            display: block; margin: 0 auto; border-radius: 12px;
+            background: #0f1a2f; box-shadow: inset 0 0 50px rgba(0,0,0,0.7);
+            width: 800px; height: 400px; cursor: default;
+            touch-action: none; /* Mejora 4: Crucial para controles táctiles */
+        }
+        .controls {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 18px; padding: 10px 18px; background: #0f0f2a;
+            border-radius: 50px; border: 1px solid #00ccff44; flex-wrap: wrap; gap: 10px;
+        }
+        .controls div { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .key {
+            background: #1a1a3e; padding: 4px 12px; border-radius: 30px;
+            border: 1px solid #00ccff66; color: #00ccff; font-weight: bold; font-size: 0.8rem;
+        }
+        .score { font-size: 1.6rem; font-weight: bold; color: #fff; text-shadow: 0 0 20px #00ccff; letter-spacing: 3px; }
+        .btn {
+            background: #00ccff; border: none; color: #0a0a1a; padding: 7px 22px;
+            border-radius: 40px; font-weight: bold; cursor: pointer; transition: 0.3s;
+            font-size: 0.95rem; font-family: 'Courier New', monospace;
+        }
+        .btn:hover { transform: scale(1.05); box-shadow: 0 0 30px #00ccff; }
+        .btn-hidden { visibility: hidden; pointer-events: none; }
+        .stats {
+            position: absolute; top: -30px; left: 20px; font-size: 0.8rem; color: #6699bb;
+        }
+        @media (max-width: 850px) {
+            canvas { width: 100%; height: auto; }
+            .controls { flex-direction: column; align-items: stretch; text-align: center; }
+            .controls div { justify-content: center; }
+        }
+    </style>
 </head>
-
 <body>
-
-<div id="game-container">
-
-    <div id="hud">
-        <div class="hud-box">❤️ Vidas: <span id="lives">3</span></div>
-        <div class="hud-box">🍚 Arroz: <span id="rice">0</span></div>
-        <div class="hud-box">🥕 Zanahorias: <span id="carrots">0</span></div>
-        <div class="hud-box">⭐ Puntos: <span id="score">0</span></div>
-        <div class="hud-box">🏦 Nivel <span id="level">1</span></div>
-    </div>
-
-    <canvas id="gameCanvas" width="800" height="500"></canvas>
-
-    <!-- PANTALLA PRINCIPAL -->
-    <div id="startScreen" class="overlay">
-        <h1>BLUE JULES</h1>
-        <div class="subtitle">🐰 Una aventura llena de arroz, zanahorias y bañeras 🛁</div>
-
-        <button id="startButton">🎮 JUGAR</button>
-
-        <div class="controls">
-            ← → / A D = Mover<br>
-            ↑ / W / ESPACIO = Saltar<br>
-            R = Reiniciar nivel<br>
-            I = Volver al inicio
+<div class="game-container">
+    <!-- Mejora 10: Estadísticas guardadas en LocalStorage -->
+    <div class="stats" id="statsDisplay">Victorias Históricas - J1: 0 | J2/IA: 0</div>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div class="controls">
+        <div>
+            <span class="key">W / S</span>
+            <span style="color:#aaa;">J1</span>
         </div>
-    </div>
-
-    <!-- SELECCIÓN DE PERSONAJE -->
-    <div id="characterScreen" class="overlay hidden">
-        <h2>✨ ELIGE TU PERSONAJE ✨</h2>
-
-        <div class="characters">
-
-            <div class="character" data-character="rabbit">
-                <div class="character-icon">🐰</div>
-                <div class="character-name">Conejito</div>
-            </div>
-
-            <div class="character" data-character="prince">
-                <div class="character-icon">🤴</div>
-                <div class="character-name">Príncipe</div>
-            </div>
-
-            <div class="character" data-character="princess">
-                <div class="character-icon">👸</div>
-                <div class="character-name">Princesa</div>
-            </div>
-
+        <div class="score" id="scoreDisplay">0 - 0</div>
+        <div>
+            <span style="color:#aaa;">J2 / CPU</span>
+            <span class="key">⬆ / ⬇</span>
         </div>
-
-        <div id="selectedCharacter">
-            Elige un personaje
-        </div>
-
-        <button id="continueButton" disabled>
-            ▶️ COMENZAR AVENTURA
-        </button>
+        <button class="btn" id="resetBtn">⟳ Reiniciar</button>
     </div>
-
-    <!-- GAME OVER -->
-    <div id="gameOverScreen" class="overlay hidden">
-        <h1 class="game-over-title">💀 GAME OVER</h1>
-        <p id="finalScore"></p>
-        <button id="restartButton">🔄 REINTENTAR</button>
-        <button id="homeButton">🏠 INICIO</button>
-    </div>
-
-    <!-- VICTORIA -->
-    <div id="winScreen" class="overlay hidden">
-        <h1 class="win-title">🏆 ¡GANASTE!</h1>
-        
-        <!-- VIDEO DE VICTORIA -->
-        <video id="winVideo" src="justino win.mp4" width="400" style="border-radius: 12px; margin-bottom: 20px; box-shadow: 0 0 20px rgba(101, 255, 145, 0.4);"></video>
-        
-        <p id="winScore"></p>
-        <button id="nextLevelButton">➡️ SIGUIENTE NIVEL</button>
-        <button id="winHomeButton">🏠 INICIO</button>
-    </div>
-
 </div>
 
 <script>
-
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-const WIDTH = canvas.width;
-const HEIGHT = canvas.height;
-
-/* =========================
-   ELEMENTOS DE LA INTERFAZ
-========================= */
-
-const startScreen = document.getElementById("startScreen");
-const characterScreen = document.getElementById("characterScreen");
-const gameOverScreen = document.getElementById("gameOverScreen");
-const winScreen = document.getElementById("winScreen");
-const winVideo = document.getElementById("winVideo"); // REFERENCIA AL VIDEO
-
-const livesText = document.getElementById("lives");
-const riceText = document.getElementById("rice");
-const carrotsText = document.getElementById("carrots");
-const scoreText = document.getElementById("score");
-const levelText = document.getElementById("level");
-
-const selectedCharacterText =
-    document.getElementById("selectedCharacter");
-
-const continueButton =
-    document.getElementById("continueButton");
-
-/* =========================
-   PERSONAJES
-========================= */
-
-const characters = {
-    rabbit: "🐰",
-    prince: "🤴",
-    princess: "👸"
-};
-
-let selectedCharacter = null;
-
-/* =========================
-   ESTADO DEL JUEGO
-========================= */
-
-let gameRunning = false;
-let currentLevel = 0;
-
-const game = {
-    lives: 3,
-    rice: 0,
-    carrots: 0,
-    score: 0,
-    level: 1
-};
-
-/* =========================
-   JUGADOR
-========================= */
-
-const player = {
-    x: 60,
-    y: 350,
-    width: 45,
-    height: 45,
-    vx: 0,
-    vy: 0,
-    speed: 4,
-    jumpPower: 11,
-    grounded: false
-};
-
-/* =========================
-   FÍSICA
-========================= */
-
-const gravity = 0.5;
-
-/* =========================
-   CONTROLES
-========================= */
-
-const keys = {};
-
-window.addEventListener("keydown", e => {
-
-    keys[e.key.toLowerCase()] = true;
-
-    if (
-        ["arrowup", "arrowdown", "arrowleft", "arrowright", " "]
-        .includes(e.key.toLowerCase())
-    ) {
-        e.preventDefault();
-    }
-
-    if (e.key.toLowerCase() === "r" && gameRunning) {
-        loadLevel(currentLevel);
-    }
-
-    if (e.key.toLowerCase() === "i") {
-        showStartScreen();
-    }
-});
-
-window.addEventListener("keyup", e => {
-    keys[e.key.toLowerCase()] = false;
-});
-
-/* =========================
-   NIVELES
-========================= */
-
-const levels = [
-
-    {
-        platforms: [
-            {x:0, y:450, w:800, h:50},
-            {x:120, y:370, w:150, h:20},
-            {x:330, y:300, w:140, h:20},
-            {x:540, y:370, w:140, h:20},
-            {x:650, y:260, w:100, h:20}
-        ],
-
-        rice: [
-            {x:180, y:330},
-            {x:390, y:260},
-            {x:590, y:330},
-            {x:690, y:220}
-        ],
-
-        carrots: [
-            {x:250, y:420},
-            {x:450, y:420},
-            {x:730, y:420}
-        ],
-
-        enemies: [
-            {x:300, y:410, w:45, h:40, vx:1.5},
-            {x:500, y:410, w:45, h:40, vx:-1.5}
-        ]
-    },
-
-    {
-        platforms: [
-            {x:0, y:450, w:800, h:50},
-            {x:80, y:350, w:120, h:20},
-            {x:260, y:280, w:130, h:20},
-            {x:460, y:350, w:130, h:20},
-            {x:650, y:250, w:100, h:20}
-        ],
-
-        rice: [
-            {x:120, y:310},
-            {x:300, y:240},
-            {x:500, y:310},
-            {x:690, y:210}
-        ],
-
-        carrots: [
-            {x:220, y:420},
-            {x:400, y:420},
-            {x:620, y:420}
-        ],
-
-        enemies: [
-            {x:210, y:410, w:45, h:40, vx:2},
-            {x:590, y:410, w:45, h:40, vx:-2}
-        ]
-    },
-
-    {
-        platforms: [
-            {x:0, y:450, w:800, h:50},
-            {x:100, y:360, w:120, h:20},
-            {x:300, y:300, w:120, h:20},
-            {x:500, y:360, w:120, h:20},
-            {x:680, y:290, w:100, h:20}
-        ],
-
-        rice: [
-            {x:140, y:320},
-            {x:340, y:260},
-            {x:540, y:320},
-            {x:720, y:250}
-        ],
-
-        carrots: [
-            {x:250, y:420},
-            {x:450, y:420},
-            {x:700, y:420}
-        ],
-
-        enemies: [
-            {x:230, y:410, w:45, h:40, vx:1.7},
-            {x:620, y:410, w:45, h:40, vx:-1.7}
-        ]
-    },
-
-    {
-        platforms: [
-            {x:0, y:450, w:800, h:50},
-            {x:70, y:340, w:120, h:20},
-            {x:240, y:250, w:130, h:20},
-            {x:430, y:340, w:130, h:20},
-            {x:620, y:230, w:130, h:20}
-        ],
-
-        rice: [
-            {x:110, y:300},
-            {x:280, y:210},
-            {x:470, y:300},
-            {x:660, y:190}
-        ],
-
-        carrots: [
-            {x:200, y:420},
-            {x:400, y:420},
-            {x:600, y:420}
-        ],
-
-        enemies: [
-            {x:190, y:410, w:45, h:40, vx:2},
-            {x:570, y:410, w:45, h:40, vx:-2}
-        ]
-    },
-
-    {
-        platforms: [
-            {x:0, y:450, w:800, h:50},
-            {x:130, y:330, w:130, h:20},
-            {x:340, y:250, w:130, h:20},
-            {x:550, y:330, w:130, h:20},
-            {x:700, y:220, w:80, h:20}
-        ],
-
-        rice: [
-            {x:170, y:290},
-            {x:380, y:210},
-            {x:590, y:290},
-            {x:730, y:180}
-        ],
-
-        carrots: [
-            {x:280, y:420},
-            {x:480, y:420},
-            {x:700, y:420}
-        ],
-
-        enemies: [
-            {x:270, y:410, w:45, h:40, vx:1.8},
-            {x:640, y:410, w:45, h:40, vx:-1.8}
-        ]
-    },
-
-    {
-        platforms: [
-            {x:0, y:450, w:800, h:50},
-            {x:100, y:350, w:100, h:20},
-            {x:250, y:280, w:120, h:20},
-            {x:430, y:350, w:120, h:20},
-            {x:600, y:270, w:120, h:20}
-        ],
-
-        rice: [
-            {x:130, y:310},
-            {x:290, y:240},
-            {x:470, y:310},
-            {x:640, y:230}
-        ],
-
-        carrots: [
-            {x:220, y:420},
-            {x:400, y:420},
-            {x:650, y:420}
-        ],
-
-        enemies: [
-            {x:200, y:410, w:45, h:40, vx:2},
-            {x:560, y:410, w:45, h:40, vx:-2}
-        ]
-    },
-
-    {
-        platforms: [
-            {x:0, y:450, w:800, h:50},
-            {x:80, y:360, w:130, h:20},
-            {x:290, y:290, w:130, h:20},
-            {x:500, y:350, w:120, h:20},
-            {x:660, y:240, w:110, h:20}
-        ],
-
-        rice: [
-            {x:120, y:320},
-            {x:330, y:250},
-            {x:540, y:310},
-            {x:700, y:200}
-        ],
-
-        carrots: [
-            {x:230, y:420},
-            {x:430, y:420},
-            {x:700, y:420}
-        ],
-
-        enemies: [
-            {x:220, y:410, w:45, h:40, vx:1.5},
-            {x:620, y:410, w:45, h:40, vx:-2}
-        ]
-    },
-
-    {
-        platforms: [
-            {x:0, y:450, w:800, h:50},
-            {x:120, y:330, w:120, h:20},
-            {x:310, y:260, w:130, h:20},
-            {x:510, y:330, w:130, h:20},
-            {x:690, y:220, w:90, h:20}
-        ],
-
-        rice: [
-            {x:160, y:290},
-            {x:350, y:220},
-            {x:550, y:290},
-            {x:720, y:180}
-        ],
-
-        carrots: [
-            {x:260, y:420},
-            {x:470, y:420},
-            {x:680, y:420}
-        ],
-
-        enemies: [
-            {x:250, y:410, w:45, h:40, vx:2},
-            {x:630, y:410, w:45, h:40, vx:-2}
-        ]
-    },
-
-    {
-        platforms: [
-            {x:0, y:450, w:800, h:50},
-            {x:70, y:350, w:130, h:20},
-            {x:260, y:270, w:130, h:20},
-            {x:450, y:350, w:130, h:20},
-            {x:640, y:260, w:130, h:20}
-        ],
-
-        rice: [
-            {x:110, y:310},
-            {x:300, y:230},
-            {x:490, y:310},
-            {x:680, y:220}
-        ],
-
-        carrots: [
-            {x:210, y:420},
-            {x:420, y:420},
-            {x:650, y:420}
-        ],
-
-        enemies: [
-            {x:210, y:410, w:45, h:40, vx:1.8},
-            {x:590, y:410, w:45, h:40, vx:-1.8}
-        ]
-    },
-
-    {
-        platforms: [
-            {x:0, y:450, w:800, h:50},
-            {x:100, y:350, w:120, h:20},
-            {x:280, y:270, w:120, h:20},
-            {x:460, y:350, w:120, h:20},
-            {x:620, y:260, w:150, h:20}
-        ],
-
-        rice: [
-            {x:140, y:310},
-            {x:320, y:230},
-            {x:500, y:310},
-            {x:680, y:220}
-        ],
-
-        carrots: [
-            {x:240, y:420},
-            {x:440, y:420},
-            {x:680, y:420}
-        ],
-
-        enemies: [
-            {x:220, y:410, w:45, h:40, vx:2},
-            {x:600, y:410, w:45, h:40, vx:-2},
-            {x:380, y:410, w:45, h:40, vx:1.5}
-        ]
-    }
-
-];
-
-/* =========================
-   NIVEL ACTUAL
-========================= */
-
-let platforms = [];
-let riceItems = [];
-let carrotItems = [];
-let enemies = [];
-
-/* =========================
-   FUNCIONES DE INTERFAZ
-========================= */
-
-function hideAllScreens() {
-    startScreen.classList.add("hidden");
-    characterScreen.classList.add("hidden");
-    gameOverScreen.classList.add("hidden");
-    winScreen.classList.add("hidden");
-}
-
-function showStartScreen() {
-    gameRunning = false;
-    hideAllScreens();
-    startScreen.classList.remove("hidden");
-}
-
-document.getElementById("startButton").addEventListener("click", () => {
-
-    hideAllScreens();
-
-    characterScreen.classList.remove("hidden");
-
-    selectedCharacter = null;
-
-    document.querySelectorAll(".character").forEach(c => {
-        c.classList.remove("selected");
-    });
-
-    selectedCharacterText.textContent =
-        "Elige un personaje";
-
-    continueButton.disabled = true;
-});
-
-/* =========================
-   SELECCIÓN DE PERSONAJE
-========================= */
-
-document.querySelectorAll(".character").forEach(card => {
-
-    card.addEventListener("click", () => {
-
-        document.querySelectorAll(".character").forEach(c => {
-            c.classList.remove("selected");
-        });
-
-        card.classList.add("selected");
-
-        selectedCharacter =
-            card.dataset.character;
-
-        let name = "";
-
-        if (selectedCharacter === "rabbit") {
-            name = "🐰 Conejito";
-        }
-
-        if (selectedCharacter === "prince") {
-            name = "🤴 Príncipe";
-        }
-
-        if (selectedCharacter === "princess") {
-            name = "👸 Princesa";
-        }
-
-        selectedCharacterText.textContent =
-            "Has elegido: " + name;
-
-        continueButton.disabled = false;
-    });
-
-});
-
-/* =========================
-   COMENZAR
-========================= */
-
-continueButton.addEventListener("click", () => {
-
-    if (!selectedCharacter) return;
-
-    hideAllScreens();
-
-    game.lives = 3;
-    game.rice = 0;
-    game.carrots = 0;
-    game.score = 0;
-    currentLevel = 0;
-    game.level = 1;
-
-    loadLevel(currentLevel);
-
-    gameRunning = true;
-});
-
-/* =========================
-   CARGAR NIVEL
-========================= */
-
-function loadLevel(index) {
-
-    const level = levels[index];
-
-    platforms = level.platforms.map(p => ({...p}));
-
-    riceItems = level.rice.map(item => ({
-        x: item.x,
-        y: item.y,
-        collected: false
-    }));
-
-    carrotItems = level.carrots.map(item => ({
-        x: item.x,
-        y: item.y,
-        collected: false
-    }));
-
-    enemies = level.enemies.map(e => ({
-        ...e
-    }));
-
-    player.x = 50;
-    player.y = 390;
-    player.vx = 0;
-    player.vy = 0;
-
-    game.rice = 0;
-
-    levelText.textContent = game.level;
-
-    updateHUD();
-}
-
-/* =========================
-   ACTUALIZAR HUD
-========================= */
-
-function updateHUD() {
-
-    livesText.textContent = game.lives;
-    riceText.textContent = game.rice;
-    carrotsText.textContent = game.carrots;
-    scoreText.textContent = game.score;
-    levelText.textContent = game.level;
-
-}
-
-/* =========================
-   COLISIONES
-========================= */
-
-function collision(a, b) {
-
-    return (
-        a.x < b.x + b.w &&
-        a.x + a.width > b.x &&
-        a.y < b.y + b.h &&
-        a.y + a.height > b.y
-    );
-}
-
-/* =========================
-   ACTUALIZAR JUGADOR
-========================= */
-
-function updatePlayer() {
-
-    player.vx = 0;
-
-    if (keys["arrowleft"] || keys["a"]) {
-        player.vx = -player.speed;
-    }
-
-    if (keys["arrowright"] || keys["d"]) {
-        player.vx = player.speed;
-    }
-
-    if (
-        (keys["arrowup"] ||
-        keys["w"] ||
-        keys[" "]) &&
-        player.grounded
-    ) {
-
-        player.vy = -player.jumpPower;
-        player.grounded = false;
-    }
-
-    player.vy += gravity;
-
-    player.x += player.vx;
-    player.y += player.vy;
-
-    if (player.x < 0) {
-        player.x = 0;
-    }
-
-    if (player.x + player.width > WIDTH) {
-        player.x = WIDTH - player.width;
-    }
-
-    player.grounded = false;
-
-    for (const p of platforms) {
-
-        if (
-            player.x < p.x + p.w &&
-            player.x + player.width > p.x &&
-            player.y + player.height <= p.y + 15 &&
-            player.y + player.height + player.vy >= p.y
-        ) {
-
-            player.y = p.y - player.height;
-            player.vy = 0;
-            player.grounded = true;
-        }
-    }
-
-    if (player.y > HEIGHT + 50) {
-
-        loseLife();
-    }
-}
-
-/* =========================
-   ACTUALIZAR ENEMIGOS
-========================= */
-
-function updateEnemies() {
-
-    for (const enemy of enemies) {
-
-        enemy.x += enemy.vx;
-
-        if (
-            enemy.x < 0 ||
-            enemy.x + enemy.w > WIDTH
-        ) {
-            enemy.vx *= -1;
-        }
-
-        if (collision(player, enemy)) {
-
-            if (player.vy > 0 &&
-                player.y + player.height - 10 < enemy.y + 15) {
-
-                enemy.x = -100;
-                game.score += 100;
-                player.vy = -7;
-
-            } else {
-
-                loseLife();
-                return;
+    (function() {
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const resetBtn = document.getElementById('resetBtn');
+        const statsDisplay = document.getElementById('statsDisplay');
+
+        // Mejora 5: Web Audio API (Se inicializa al interactuar para evitar bloqueos del navegador)
+        let audioCtx;
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            if (type === 'hit') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'score') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
             }
         }
-    }
-}
 
-/* =========================
-   RECOLECTAR ARROZ
-========================= */
+        const CONFIG = {
+            width: 800, height: 400,
+            paddleWidth: 12, paddleHeight: 70,
+            ballRadius: 8, ballSpeed: 4.5, maxSpeed: 10.5,
+            speedIncrement: 0.3, winningScore: 7
+        };
 
-function updateRice() {
-
-    for (const item of riceItems) {
-
-        if (item.collected) continue;
-
-        const dx =
-            player.x + player.width / 2 - item.x;
-
-        const dy =
-            player.y + player.height / 2 - item.y;
-
-        const distance =
-            Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < 35) {
-
-            item.collected = true;
-
-            game.rice++;
-            game.score += 50;
-
-            updateHUD();
+        // Mejora 10: Cargar LocalStorage
+        let stats = { j1: 0, j2: 0 };
+        if(localStorage.getItem('tennisStats')) {
+            stats = JSON.parse(localStorage.getItem('tennisStats'));
         }
-    }
-}
-
-/* =========================
-   RECOLECTAR ZANAHORIAS
-========================= */
-
-function updateCarrots() {
-
-    for (const item of carrotItems) {
-
-        if (item.collected) continue;
-
-        const dx =
-            player.x + player.width / 2 - item.x;
-
-        const dy =
-            player.y + player.height / 2 - item.y;
-
-        const distance =
-            Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < 35) {
-
-            item.collected = true;
-
-            game.carrots++;
-            game.score += 200;
-
-            updateHUD();
+        function updateStatsDisplay() {
+            statsDisplay.textContent = `Victorias Históricas - J1: ${stats.j1} | J2/IA: ${stats.j2}`;
         }
-    }
-}
+        updateStatsDisplay();
 
-/* =========================
-   PERDER VIDA
-========================= */
+        let game = {
+            paddle1: { x: 20, y: 0, dy: 0, score: 0 },
+            paddle2: { x: 0, y: 0, dy: 0, score: 0 },
+            ball: { x: 0, y: 0, dx: 0, dy: 0, speed: CONFIG.ballSpeed },
+            running: false, winner: null, started: false, showReset: false,
+            countdown: 3, countdownActive: false, countdownTimer: 0, firstStart: true,
+            paused: false, // Mejora 9: Estado de pausa
+            vsCPU: false,  // Mejora 2: Modo IA
+            shakeTimer: 0  // Mejora 8: Screen Shake
+        };
 
-function loseLife() {
+        // Mejora 3: Sistema de Partículas
+        let particles = [];
+        function spawnParticles(x, y, dxDirection, baseColor) {
+            for(let i=0; i<15; i++) {
+                particles.push({
+                    x: x, y: y,
+                    vx: dxDirection * (Math.random() * 3 + 1),
+                    vy: (Math.random() - 0.5) * 6,
+                    life: 1.0, color: baseColor
+                });
+            }
+        }
 
-    game.lives--;
+        // Mejora 7: Colorimetría Dinámica
+        function getBallColor() {
+            const ratio = (game.ball.speed - CONFIG.ballSpeed) / (CONFIG.maxSpeed - CONFIG.ballSpeed);
+            // Transición de Blanco -> Amarillo -> Naranja -> Rojo neón
+            if (ratio < 0.3) return '#ffffff';
+            if (ratio < 0.6) return '#ffee00';
+            if (ratio < 0.9) return '#ff8800';
+            return '#ff2200';
+        }
 
-    updateHUD();
+        function resetPositions() {
+            game.paddle1.y = CONFIG.height/2 - CONFIG.paddleHeight/2;
+            game.paddle2.y = CONFIG.height/2 - CONFIG.paddleHeight/2;
+            game.paddle2.x = CONFIG.width - 20 - CONFIG.paddleWidth;
+            game.paddle1.dy = 0; game.paddle2.dy = 0;
+            
+            game.ball.x = CONFIG.width/2; game.ball.y = CONFIG.height/2;
+            const angle = (Math.random() * 0.8 + 0.2) * (Math.random() > 0.5 ? 1 : -1);
+            game.ball.dx = Math.cos(angle) * CONFIG.ballSpeed;
+            game.ball.dy = Math.sin(angle) * CONFIG.ballSpeed;
+            game.ball.speed = CONFIG.ballSpeed;
+            
+            game.winner = null; game.running = false; particles = [];
+        }
 
-    if (game.lives <= 0) {
+        function resetGame() {
+            game.paddle1.score = 0; game.paddle2.score = 0;
+            game.started = false; game.running = false;
+            game.winner = null; game.showReset = false; game.paused = false;
+            game.countdown = 3; game.countdownActive = false; game.firstStart = true;
+            resetPositions(); updateScoreDisplay(); updateResetButton();
+        }
 
-        gameRunning = false;
+        function startGame() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
 
-        document.getElementById("finalScore").textContent =
-            "Puntos: " + game.score;
+            if (!game.started) {
+                game.started = true; game.showReset = true;
+                if (game.firstStart) {
+                    game.countdown = 3; game.countdownActive = true;
+                    game.running = false; game.countdownTimer = 60;
+                    game.firstStart = false;
+                } else {
+                    resumeAfterPoint();
+                }
+                updateScoreDisplay(); updateResetButton();
+            }
+        }
 
-        hideAllScreens();
+        function resumeAfterPoint() {
+            resetPositions(); game.running = true;
+            const angle = (Math.random() * 0.8 + 0.2) * (Math.random() > 0.5 ? 1 : -1);
+            game.ball.dx = Math.cos(angle) * CONFIG.ballSpeed * (Math.random() > 0.5 ? 1 : -1);
+            game.ball.dy = Math.sin(angle) * CONFIG.ballSpeed;
+            game.ball.speed = CONFIG.ballSpeed;
+        }
 
-        gameOverScreen.classList.remove("hidden");
+        function updateScoreDisplay() {
+            scoreDisplay.textContent = `${game.paddle1.score} - ${game.paddle2.score}`;
+        }
 
-    } else {
+        function updateResetButton() {
+            if (game.showReset && game.started) resetBtn.classList.remove('btn-hidden');
+            else resetBtn.classList.add('btn-hidden');
+        }
 
-        player.x = 50;
-        player.y = 390;
-        player.vx = 0;
-        player.vy = 0;
-    }
-}
+        function drawStartScreen() {
+            // Mejora 1: Limpieza sólida solo en menús para evitar arrastre de frame
+            ctx.fillStyle = 'rgba(10, 10, 30, 0.9)'; ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            
+            ctx.shadowColor = '#00ccff'; ctx.shadowBlur = 40;
+            ctx.font = 'bold 52px "Courier New", monospace'; ctx.fillStyle = '#ffffff';
+            ctx.fillText('🎾 TENNIS FOR TWO', CONFIG.width/2, CONFIG.height/2 - 90);
 
-/* =========================
-   COMPROBAR NIVEL (CON VIDEO)
-========================= */
+            ctx.shadowBlur = 15; ctx.font = '18px "Courier New", monospace'; ctx.fillStyle = '#88ddff';
+            ctx.fillText('Presiona "Iniciar" o [Espacio]', CONFIG.width/2, CONFIG.height/2 - 20);
 
-function checkLevelComplete() {
+            // Botón Modo IA
+            ctx.shadowBlur = 0;
+            const modeBtnY = CONFIG.height/2 + 30;
+            ctx.fillStyle = game.vsCPU ? '#ff8a80' : '#1a1a3e';
+            ctx.strokeStyle = game.vsCPU ? '#ff8a80' : '#00ccff66';
+            ctx.beginPath(); ctx.roundRect(CONFIG.width/2 - 100, modeBtnY, 200, 40, 20);
+            ctx.fill(); ctx.stroke();
+            ctx.fillStyle = game.vsCPU ? '#111' : '#00ccff';
+            ctx.font = 'bold 16px "Courier New"';
+            ctx.fillText(game.vsCPU ? '🤖 MODO: VS CPU' : '👥 MODO: 2 JUGADORES', CONFIG.width/2, modeBtnY + 20);
 
-    const allRiceCollected =
-        riceItems.every(item => item.collected);
+            // Botón Iniciar
+            const btnX = CONFIG.width/2 - 80, btnY = CONFIG.height/2 + 100;
+            ctx.shadowBlur = 30; ctx.shadowColor = '#00ccff'; ctx.fillStyle = '#00ccff';
+            ctx.beginPath(); ctx.roundRect(btnX, btnY, 160, 50, 30); ctx.fill();
+            ctx.shadowBlur = 0; ctx.fillStyle = '#0a0a1a'; ctx.font = 'bold 24px "Courier New"';
+            ctx.fillText('▶️ INICIAR', CONFIG.width/2, btnY + 25);
+        }
 
-    if (allRiceCollected) {
+        function handleCanvasClick(e) {
+            if (game.started) return;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+            const mouseX = (e.clientX - rect.left) * scaleX, mouseY = (e.clientY - rect.top) * scaleY;
 
-        gameRunning = false;
+            // Click en Iniciar
+            if (mouseX >= CONFIG.width/2 - 80 && mouseX <= CONFIG.width/2 + 80 &&
+                mouseY >= CONFIG.height/2 + 100 && mouseY <= CONFIG.height/2 + 150) {
+                startGame();
+            }
+            // Click en Toggle IA
+            if (mouseX >= CONFIG.width/2 - 100 && mouseX <= CONFIG.width/2 + 100 &&
+                mouseY >= CONFIG.height/2 + 30 && mouseY <= CONFIG.height/2 + 70) {
+                game.vsCPU = !game.vsCPU;
+            }
+        }
 
-        document.getElementById("winScore").textContent =
-            "Nivel completado · Puntos: " + game.score;
+        function draw() {
+            // Mejora 8: Screen Shake
+            ctx.save();
+            if (game.shakeTimer > 0) {
+                const dx = (Math.random() - 0.5) * 12;
+                const dy = (Math.random() - 0.5) * 12;
+                ctx.translate(dx, dy);
+                game.shakeTimer--;
+            }
 
-        hideAllScreens();
+            // Mejora 1: Motion Blur (Estela)
+            ctx.fillStyle = 'rgba(15, 26, 47, 0.3)'; // Limpieza semi-transparente
+            ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
 
-        winScreen.classList.remove("hidden");
+            // Red central dibujada después del blur para que no se borronee
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 2;
+            ctx.setLineDash([8, 12]);
+            ctx.beginPath(); ctx.moveTo(CONFIG.width/2, 0); ctx.lineTo(CONFIG.width/2, CONFIG.height); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.beginPath(); ctx.arc(CONFIG.width/2, CONFIG.height/2, 60, 0, Math.PI*2); ctx.stroke();
+
+            if (!game.started) { ctx.restore(); drawStartScreen(); return; }
+
+            const ballColor = getBallColor();
+
+            // Dibujar Partículas
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+
+            // Raquetas
+            ctx.shadowBlur = 18; ctx.shadowColor = '#4fc3f7'; ctx.fillStyle = '#4fc3f7';
+            ctx.fillRect(game.paddle1.x, game.paddle1.y, CONFIG.paddleWidth, CONFIG.paddleHeight);
+
+            ctx.shadowColor = '#ff8a80'; ctx.fillStyle = '#ff8a80';
+            ctx.fillRect(game.paddle2.x, game.paddle2.y, CONFIG.paddleWidth, CONFIG.paddleHeight);
+
+            // Pelota
+            ctx.shadowColor = ballColor; ctx.shadowBlur = 30; ctx.fillStyle = ballColor;
+            ctx.beginPath(); ctx.arc(game.ball.x, game.ball.y, CONFIG.ballRadius, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // UI Overlays
+            if (game.countdownActive) {
+                ctx.fillStyle = 'rgba(10, 10, 30, 0.7)'; ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowBlur = 60; ctx.shadowColor = '#00ccff';
+                ctx.font = 'bold 120px "Courier New"'; ctx.fillStyle = '#ffffff';
+                let text = game.countdown > 0 ? game.countdown.toString() : '¡YA!';
+                if (game.countdown === 0) { ctx.font = 'bold 80px "Courier New"'; ctx.fillStyle = '#00ff88'; }
+                ctx.fillText(text, CONFIG.width/2, CONFIG.height/2 - 10);
+                ctx.shadowBlur = 0;
+            }
+
+            if (game.paused && !game.countdownActive && !game.winner) {
+                ctx.fillStyle = 'rgba(10, 10, 30, 0.6)'; ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
+                ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.font = 'bold 40px "Courier New"';
+                ctx.fillText('PAUSA', CONFIG.width/2, CONFIG.height/2);
+            }
+
+            if (game.winner) {
+                ctx.shadowBlur = 40; ctx.shadowColor = '#00ccff'; ctx.textAlign = 'center';
+                ctx.font = 'bold 40px "Courier New"'; ctx.fillStyle = '#ffffff';
+                const msg = game.winner === 'player1' ? '🏆 JUGADOR 1 GANA' : (game.vsCPU ? '🏆 CPU GANA' : '🏆 JUGADOR 2 GANA');
+                ctx.fillText(msg, CONFIG.width/2, CONFIG.height/2 - 20);
+                ctx.shadowBlur = 0; ctx.font = '18px "Courier New"'; ctx.fillStyle = '#aaa';
+                ctx.fillText('Presiona "Reiniciar" para jugar de nuevo', CONFIG.width/2, CONFIG.height/2 + 40);
+            }
+            
+            ctx.restore(); // Finaliza Shake
+        }
+
+        function update() {
+            if (game.countdownActive) {
+                if (game.countdownTimer-- <= 0) {
+                    game.countdown--; game.countdownTimer = 60;
+                    if (game.countdown < 0) {
+                        game.countdownActive = false; game.running = true; game.countdown = 3;
+                        resumeAfterPoint();
+                    }
+                }
+                return;
+            }
+
+            // Mejora 9: Lógica bloqueada si está en pausa
+            if (!game.running || game.winner || !game.started || game.paused) return;
+
+            const p1 = game.paddle1, p2 = game.paddle2, ball = game.ball;
+
+            // Movimiento J1
+            p1.y += p1.dy;
+            p1.y = Math.max(0, Math.min(CONFIG.height - CONFIG.paddleHeight, p1.y));
+            
+            // Mejora 2: IA Fluida (Lerp) para J2
+            if (game.vsCPU) {
+                // Solo reacciona si la pelota viene hacia él
+                if (ball.dx > 0) {
+                    const targetY = ball.y - CONFIG.paddleHeight/2;
+                    p2.y += (targetY - p2.y) * 0.09; // 0.09 es la velocidad de reacción
+                } else {
+                    // Regresa al centro suavemente
+                    p2.y += ((CONFIG.height/2 - CONFIG.paddleHeight/2) - p2.y) * 0.02;
+                }
+            } else {
+                p2.y += p2.dy;
+            }
+            p2.y = Math.max(0, Math.min(CONFIG.height - CONFIG.paddleHeight, p2.y));
+
+            // Físicas Pelota
+            ball.x += ball.dx; ball.y += ball.dy;
+
+            // Actualizar Partículas
+            for(let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx; p.y += p.vy; p.life -= 0.05;
+                if(p.life <= 0) particles.splice(i, 1);
+            }
+
+            // Rebote en pared superior/inferior
+            if (ball.y - CONFIG.ballRadius < 0 || ball.y + CONFIG.ballRadius > CONFIG.height) {
+                ball.dy = -ball.dy;
+                ball.y = ball.y - CONFIG.ballRadius < 0 ? CONFIG.ballRadius : CONFIG.height - CONFIG.ballRadius;
+                playSound('hit');
+            }
+
+            // Colisión Paddle 1
+            if (ball.dx < 0 && ball.x - CONFIG.ballRadius < p1.x + CONFIG.paddleWidth &&
+                ball.x + CONFIG.ballRadius > p1.x && ball.y > p1.y && ball.y < p1.y + CONFIG.paddleHeight) {
+                
+                playSound('hit'); spawnParticles(ball.x, ball.y, 1, '#4fc3f7');
+                const hitPos = (ball.y - (p1.y + CONFIG.paddleHeight/2)) / (CONFIG.paddleHeight/2);
+                const angle = hitPos * Math.PI / 3.5;
+                
+                ball.speed = Math.min(ball.speed + CONFIG.speedIncrement, CONFIG.maxSpeed);
+                ball.dx = Math.cos(angle) * ball.speed;
+                // Mejora 6: Añadir "Spin" basado en la inercia de la raqueta
+                ball.dy = (Math.sin(angle) * ball.speed) + (p1.dy * 0.25);
+                
+                if (ball.dx < 0) ball.dx = -ball.dx;
+                ball.x = p1.x + CONFIG.paddleWidth + CONFIG.ballRadius + 1;
+            }
+
+            // Colisión Paddle 2
+            if (ball.dx > 0 && ball.x + CONFIG.ballRadius > p2.x &&
+                ball.x - CONFIG.ballRadius < p2.x + CONFIG.paddleWidth &&
+                ball.y > p2.y && ball.y < p2.y + CONFIG.paddleHeight) {
+                
+                playSound('hit'); spawnParticles(ball.x, ball.y, -1, '#ff8a80');
+                const hitPos = (ball.y - (p2.y + CONFIG.paddleHeight/2)) / (CONFIG.paddleHeight/2);
+                const angle = hitPos * Math.PI / 3.5;
+                
+                ball.speed = Math.min(ball.speed + CONFIG.speedIncrement, CONFIG.maxSpeed);
+                ball.dx = -Math.cos(angle) * ball.speed;
+                // Mejora 6: Spin
+                ball.dy = (Math.sin(angle) * ball.speed) + (p2.dy * 0.25);
+                
+                if (ball.dx > 0) ball.dx = -ball.dx;
+                ball.x = p2.x - CONFIG.ballRadius - 1;
+            }
+
+            // Puntuación
+            if (ball.x - CONFIG.ballRadius < -20 || ball.x + CONFIG.ballRadius > CONFIG.width + 20) {
+                playSound('score');
+                game.shakeTimer = 15; // Activar temblor
+                
+                if (ball.x < 0) p2.score++; else p1.score++;
+                updateScoreDisplay();
+
+                if (p1.score >= CONFIG.winningScore || p2.score >= CONFIG.winningScore) {
+                    game.winner = p1.score >= CONFIG.winningScore ? 'player1' : 'player2';
+                    game.running = false;
+                    
+                    // Actualizar LocalStorage
+                    if (game.winner === 'player1') stats.j1++; else stats.j2++;
+                    localStorage.setItem('tennisStats', JSON.stringify(stats));
+                    updateStatsDisplay();
+                } else {
+                    resumeAfterPoint();
+                }
+            }
+        }
+
+        function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+
+        const keys = { w: false, s: false, arrowup: false, arrowdown: false };
+
+        function handleKeyDown(e) {
+            const key = e.key.toLowerCase();
+            if (['w','s','arrowup','arrowdown',' ','enter','p','escape'].includes(key)) e.preventDefault();
+
+            // Mejora 9: Pausa
+            if ((key === 'p' || key === 'escape') && game.started && !game.winner && !game.countdownActive) {
+                game.paused = !game.paused;
+                return;
+            }
+
+            if ((key === ' ' || key === 'enter') && !game.started) { startGame(); return; }
+            if (!game.running || !game.started || game.winner || game.paused) return;
+
+            if (key === 'w') { keys.w = true; game.paddle1.dy = -6.5; }
+            if (key === 's') { keys.s = true; game.paddle1.dy = 6.5; }
+            if (!game.vsCPU) {
+                if (key === 'arrowup') { keys.arrowup = true; game.paddle2.dy = -6.5; }
+                if (key === 'arrowdown') { keys.arrowdown = true; game.paddle2.dy = 6.5; }
+            }
+        }
+
+        function handleKeyUp(e) {
+            const key = e.key.toLowerCase();
+            if (key === 'w' || key === 's') {
+                if (key === 'w') keys.w = false; if (key === 's') keys.s = false;
+                if (!keys.w && !keys.s) game.paddle1.dy = 0;
+                else if (keys.w) game.paddle1.dy = -6.5; else if (keys.s) game.paddle1.dy = 6.5;
+            }
+            if (!game.vsCPU && (key === 'arrowup' || key === 'arrowdown')) {
+                if (key === 'arrowup') keys.arrowup = false; if (key === 'arrowdown') keys.arrowdown = false;
+                if (!keys.arrowup && !keys.arrowdown) game.paddle2.dy = 0;
+                else if (keys.arrowup) game.paddle2.dy = -6.5; else if (keys.arrowdown) game.paddle2.dy = 6.5;
+            }
+        }
+
+        // Mejora 4: Controles táctiles divididos por la mitad
+        canvas.addEventListener('touchmove', function(e) {
+            e.preventDefault(); // Evita scroll de la página
+            if (!game.running || game.paused) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleY = canvas.height / rect.height;
+            const scaleX = canvas.width / rect.width;
+
+            for(let i=0; i < e.touches.length; i++) {
+                const t = e.touches[i];
+                const x = (t.clientX - rect.left) * scaleX;
+                const y = (t.clientY - rect.top) * scaleY;
+                
+                // Mitad izquierda para J1, Mitad derecha para J2 (si no es CPU)
+                if (x < CONFIG.width / 2) {
+                    game.paddle1.y = y - CONFIG.paddleHeight/2;
+                } else if (!game.vsCPU && x >= CONFIG.width / 2) {
+                    game.paddle2.y = y - CONFIG.paddleHeight/2;
+                }
+            }
+        }, { passive: false });
+
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+        canvas.addEventListener('click', handleCanvasClick);
+        resetBtn.addEventListener('click', () => { resetGame(); updateResetButton(); });
+
+        resetPositions(); updateScoreDisplay(); gameLoop();
         
-        // REPRODUCIR EL VIDEO AL GANAR EL NIVEL
-        winVideo.currentTime = 0; 
-        winVideo.play().catch(e => console.log("El navegador bloqueó el autoplay", e));
-    }
-}
-
-/* =========================
-   SIGUIENTE NIVEL
-========================= */
-
-document.getElementById("nextLevelButton")
-.addEventListener("click", () => {
-
-    winVideo.pause(); // PAUSAR VIDEO
-
-    currentLevel++;
-
-    if (currentLevel >= levels.length) {
-
-        document.getElementById("winScore").textContent =
-            "🎉 ¡Completaste todos los niveles! Puntos: " +
-            game.score;
-
-        document.getElementById("nextLevelButton")
-            .style.display = "none";
-
-        return;
-    }
-
-    game.level++;
-
-    loadLevel(currentLevel);
-
-    hideAllScreens();
-
-    gameRunning = true;
-});
-
-/* =========================
-   REINICIAR
-========================= */
-
-document.getElementById("restartButton")
-.addEventListener("click", () => {
-
-    game.lives = 3;
-    game.rice = 0;
-    game.carrots = 0;
-
-    loadLevel(currentLevel);
-
-    hideAllScreens();
-
-    gameRunning = true;
-});
-
-/* =========================
-   VOLVER A INICIO
-========================= */
-
-document.getElementById("homeButton")
-.addEventListener("click", () => {
-
-    showStartScreen();
-});
-
-document.getElementById("winHomeButton")
-.addEventListener("click", () => {
-
-    winVideo.pause(); // PAUSAR VIDEO
-    showStartScreen();
-});
-
-/* =========================
-   DIBUJAR TEXTO EMOJI
-========================= */
-
-function drawEmoji(emoji, x, y, size) {
-
-    ctx.font = size + "px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    ctx.fillText(emoji, x, y);
-}
-
-/* =========================
-   DIBUJAR FONDO
-========================= */
-
-function drawBackground() {
-
-    const gradient =
-        ctx.createLinearGradient(0, 0, 0, HEIGHT);
-
-    gradient.addColorStop(0, "#75cfff");
-    gradient.addColorStop(1, "#dff8ff");
-
-    ctx.fillStyle = gradient;
-
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
-
-    // Nubes
-
-    ctx.fillStyle = "rgba(255,255,255,0.8)";
-
-    ctx.beginPath();
-    ctx.arc(100, 80, 25, 0, Math.PI * 2);
-    ctx.arc(130, 75, 35, 0, Math.PI * 2);
-    ctx.arc(165, 85, 25, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(570, 100, 25, 0, Math.PI * 2);
-    ctx.arc(605, 90, 35, 0, Math.PI * 2);
-    ctx.arc(640, 100, 25, 0, Math.PI * 2);
-    ctx.fill();
-}
-
-/* =========================
-   DIBUJAR PLATAFORMAS
-========================= */
-
-function drawPlatforms() {
-
-    for (const p of platforms) {
-
-        ctx.fillStyle = "#4f8f3b";
-
-        ctx.fillRect(
-            p.x,
-            p.y,
-            p.w,
-            p.h
-        );
-
-        ctx.fillStyle = "#77c957";
-
-        ctx.fillRect(
-            p.x,
-            p.y,
-            p.w,
-            6
-        );
-    }
-}
-
-/* =========================
-   DIBUJAR ARROZ
-========================= */
-
-function drawRice() {
-
-    for (const item of riceItems) {
-
-        if (!item.collected) {
-
-            drawEmoji(
-                "🍚",
-                item.x,
-                item.y,
-                30
-            );
+        function resizeCanvas() {
+            const maxWidth = canvas.parentElement.clientWidth;
+            if (maxWidth < 800) { canvas.style.width = maxWidth - 30 + 'px'; canvas.style.height = 'auto'; }
+            else { canvas.style.width = '800px'; canvas.style.height = 'auto'; }
         }
-    }
-}
+        window.addEventListener('resize', resizeCanvas); resizeCanvas();
 
-/* =========================
-   DIBUJAR ZANAHORIAS
-========================= */
-
-function drawCarrots() {
-
-    for (const item of carrotItems) {
-
-        if (!item.collected) {
-
-            drawEmoji(
-                "🥕",
-                item.x,
-                item.y,
-                32
-            );
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r=0) {
+                this.moveTo(x+r, y); this.arcTo(x+w, y, x+w, y+h, r); this.arcTo(x+w, y+h, x, y+h, r);
+                this.arcTo(x, y+h, x, y, r); this.arcTo(x, y, x+w, y, r); return this;
+            };
         }
-    }
-}
-
-/* =========================
-   DIBUJAR ENEMIGOS
-========================= */
-
-function drawEnemies() {
-
-    for (const enemy of enemies) {
-
-        if (enemy.x > -100) {
-
-            drawEmoji(
-                "🛁",
-                enemy.x + enemy.w / 2,
-                enemy.y + enemy.h / 2,
-                40
-            );
-        }
-    }
-}
-
-/* =========================
-   DIBUJAR JUGADOR
-========================= */
-
-function drawPlayer() {
-
-    if (!selectedCharacter) return;
-
-    const emoji =
-        characters[selectedCharacter];
-
-    drawEmoji(
-        emoji,
-        player.x + player.width / 2,
-        player.y + player.height / 2,
-        43
-    );
-}
-
-/* =========================
-   DIBUJAR BANCO
-========================= */
-
-function drawBank() {
-
-    drawEmoji(
-        "🏦",
-        750,
-        55,
-        35
-    );
-}
-
-/* =========================
-   DIBUJAR TODO
-========================= */
-
-function draw() {
-
-    drawBackground();
-
-    drawPlatforms();
-
-    drawRice();
-
-    drawCarrots();
-
-    drawEnemies();
-
-    drawPlayer();
-
-    drawBank();
-}
-
-/* =========================
-   GAME LOOP
-========================= */
-
-function gameLoop() {
-
-    if (gameRunning) {
-
-        updatePlayer();
-        updateEnemies();
-        updateRice();
-        updateCarrots();
-        checkLevelComplete();
-
-        draw();
-    } else {
-
-        draw();
-    }
-
-    requestAnimationFrame(gameLoop);
-}
-
-/* =========================
-   INICIAR
-========================= */
-
-loadLevel(0);
-
-draw();
-
-gameLoop();
-
+    })();
 </script>
-
 </body>
 </html>
